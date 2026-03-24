@@ -1,7 +1,8 @@
 import fs from "fs";
 import path from "path";
 import AdmZip from "adm-zip";
-import { db, pool, customersTable, productsTable, paymentsTable, taxSettingsTable } from "@workspace/db";
+import { db, pool, customersTable, productsTable, paymentsTable, taxSettingsTable, teachersTable, teacherMonthlyHoursTable, otherCostsTable } from "@workspace/db";
+import { eq, and, sql } from "drizzle-orm";
 
 const PRODUCTS = [
   { name: "Iscrizione", defaultPrice: 3000, sortOrder: 0 },
@@ -53,6 +54,105 @@ function parseAmount(contanti: string, pos: string, note: string): { amount: num
   return null;
 }
 
+const TEACHERS = [
+  "Annalisa", "Silvia O.", "Ana", "Nicoletta", "Silvia B.", "Debora", "Valentina", "Nicola"
+];
+
+const TEACHER_MONTHLY_COSTS: Record<string, Record<string, number>> = {
+  "Silvia O.": { "2025-09": 18000, "2025-10": 36000, "2025-11": 36000, "2025-12": 27000 },
+  "Ana": { "2025-10": 5000, "2025-11": 2500 },
+  "Nicoletta": { "2025-09": 40000, "2025-10": 50000, "2025-11": 42500, "2025-12": 35000 },
+  "Silvia B.": { "2025-09": 20000, "2025-10": 30000, "2025-11": 24000, "2025-12": 18000 },
+  "Debora": { "2025-09": 15000, "2025-10": 15000, "2025-11": 20000, "2025-12": 27500 },
+  "Valentina": { "2025-09": 12500, "2025-10": 22500, "2025-11": 22500, "2025-12": 7500 },
+};
+
+const FIXED_COSTS = [
+  { month: "2025-09", category: "affitto", amount: 50000, note: null },
+  { month: "2025-10", category: "affitto", amount: 50000, note: null },
+  { month: "2025-11", category: "affitto", amount: 50000, note: null },
+  { month: "2025-12", category: "affitto", amount: 50000, note: null },
+  { month: "2025-09", category: "contabile", amount: 2700, note: "Petriccione" },
+  { month: "2025-12", category: "bollette", amount: 4700, note: "A2A + Acqua" },
+];
+
+async function seedCostData() {
+  console.log("\nSeeding cost data...");
+
+  const teacherMap = new Map<string, number>();
+  for (const name of TEACHERS) {
+    const existing = await db.select().from(teachersTable).where(eq(teachersTable.name, name));
+    if (existing.length > 0) {
+      teacherMap.set(name, existing[0].id);
+      if (existing[0].compensationType !== "manual" || !existing[0].active) {
+        await db.update(teachersTable)
+          .set({ compensationType: "manual", active: true })
+          .where(eq(teachersTable.id, existing[0].id));
+        console.log(`  Teacher updated to manual: ${name} (${existing[0].id})`);
+      } else {
+        console.log(`  Teacher already exists: ${name} (${existing[0].id})`);
+      }
+    } else {
+      const [inserted] = await db
+        .insert(teachersTable)
+        .values({ name, compensationType: "manual", active: true })
+        .returning();
+      teacherMap.set(name, inserted.id);
+      console.log(`  Teacher created: ${name} (${inserted.id})`);
+    }
+  }
+
+  let monthlyEntries = 0;
+  for (const [teacherName, months] of Object.entries(TEACHER_MONTHLY_COSTS)) {
+    const teacherId = teacherMap.get(teacherName)!;
+    for (const [month, manualCost] of Object.entries(months)) {
+      const existing = await db
+        .select()
+        .from(teacherMonthlyHoursTable)
+        .where(and(
+          eq(teacherMonthlyHoursTable.teacherId, teacherId),
+          eq(teacherMonthlyHoursTable.month, month)
+        ));
+      if (existing.length > 0) {
+        console.log(`  Monthly entry already exists: ${teacherName} ${month}`);
+        continue;
+      }
+      await db.insert(teacherMonthlyHoursTable).values({
+        teacherId,
+        month,
+        hoursWorked: "0",
+        manualCost,
+      });
+      monthlyEntries++;
+    }
+  }
+  console.log(`  Teacher monthly entries created: ${monthlyEntries}`);
+
+  let fixedEntries = 0;
+  for (const cost of FIXED_COSTS) {
+    const existing = await db
+      .select()
+      .from(otherCostsTable)
+      .where(and(
+        eq(otherCostsTable.month, cost.month),
+        eq(otherCostsTable.category, cost.category),
+        eq(otherCostsTable.amount, cost.amount)
+      ));
+    if (existing.length > 0) {
+      console.log(`  Fixed cost already exists: ${cost.category} ${cost.month}`);
+      continue;
+    }
+    await db.insert(otherCostsTable).values({
+      month: cost.month,
+      category: cost.category,
+      amount: cost.amount,
+      note: cost.note,
+    });
+    fixedEntries++;
+  }
+  console.log(`  Fixed cost entries created: ${fixedEntries}`);
+}
+
 async function main() {
   console.log("Seeding database...");
 
@@ -66,29 +166,32 @@ async function main() {
   const entries = zip.getEntries();
 
   const productMap = new Map<string, number>();
+  const existingProducts = await db.select().from(productsTable);
+  for (const p of existingProducts) {
+    productMap.set(p.name.toLowerCase(), p.id);
+  }
   for (const p of PRODUCTS) {
+    if (productMap.has(p.name.toLowerCase())) continue;
     const [inserted] = await db
       .insert(productsTable)
       .values({ name: p.name, defaultPrice: p.defaultPrice, sortOrder: p.sortOrder, active: true })
-      .onConflictDoNothing()
       .returning();
-    if (inserted) {
-      productMap.set(p.name.toLowerCase(), inserted.id);
-      console.log(`  Product: ${p.name} (${inserted.id})`);
-    }
-  }
-
-  if (productMap.size === 0) {
-    const existing = await db.select().from(productsTable);
-    for (const p of existing) {
-      productMap.set(p.name.toLowerCase(), p.id);
-    }
+    productMap.set(p.name.toLowerCase(), inserted.id);
+    console.log(`  Product: ${p.name} (${inserted.id})`);
   }
 
   const [existingTax] = await db.select().from(taxSettingsTable).limit(1);
   if (!existingTax) {
     await db.insert(taxSettingsTable).values({ taxRate: "22" });
     console.log("  Tax settings: 22%");
+  }
+
+  const existingPayments = await db.select({ count: sql<number>`COUNT(*)` }).from(paymentsTable);
+  if (Number(existingPayments[0].count) > 0) {
+    console.log(`  Skipping payment import: ${existingPayments[0].count} payments already exist`);
+    await seedCostData();
+    await pool.end();
+    return;
   }
 
   const customerMap = new Map<string, number>();
@@ -184,6 +287,8 @@ async function main() {
   console.log(`  Products: ${productMap.size}`);
   console.log(`  Payments: ${totalPayments}`);
   console.log(`  Skipped rows: ${skipped}`);
+
+  await seedCostData();
 
   await pool.end();
 }

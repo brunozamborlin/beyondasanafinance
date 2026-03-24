@@ -69,7 +69,7 @@ function AddCostModal({ month, onClose, onSuccess }: { month: string, onClose: (
   const createCost = useCreateOtherCost();
   const [formData, setFormData] = useState({ category: "affitto", amount: "", note: "" });
 
-  const categories = ["affitto", "bollette", "studio", "software", "altre spese"];
+  const categories = ["affitto", "bollette", "contabile", "studio", "software", "altre spese"];
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();

@@ -15,6 +15,7 @@
   },
   "dependencies": {
     "@workspace/db": "workspace:*",
-    "adm-zip": "^0.5.16"
+    "adm-zip": "^0.5.16",
+    "drizzle-orm": "catalog:"
   }
 }
