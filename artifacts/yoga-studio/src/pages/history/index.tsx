@@ -1,10 +1,12 @@
 import { PageTransition } from "@/components/PageTransition";
 import { useGetMonthlyHistory } from "@workspace/api-client-react";
 import { formatCurrency, formatMonth } from "@/lib/utils";
-import { ChevronLeft, Calendar } from "lucide-react";
+import { ChevronLeft, Calendar, ChevronRight } from "lucide-react";
+import { useLocation } from "wouter";
 
 export default function History() {
   const { data: history, isLoading } = useGetMonthlyHistory();
+  const [, navigate] = useLocation();
 
   return (
     <PageTransition className="min-h-screen bg-background">
@@ -22,7 +24,11 @@ export default function History() {
           </div>
         ) : (
           history?.map((month) => (
-            <div key={month.month} className="bg-white rounded-2xl p-5 shadow-sm border border-border/40 hover:shadow-md transition-all flex items-center justify-between">
+            <button
+              key={month.month}
+              onClick={() => navigate(`/history/${month.month}`)}
+              className="w-full bg-white rounded-2xl p-5 shadow-sm border border-border/40 hover:shadow-md transition-all flex items-center justify-between text-left active:scale-[0.98]"
+            >
               <div className="flex items-center gap-4">
                 <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center text-primary">
                   <Calendar className="w-5 h-5" />
@@ -34,11 +40,14 @@ export default function History() {
                   </div>
                 </div>
               </div>
-              <div className="text-right">
-                <div className="text-xs text-muted-foreground mb-1">Utile Netto</div>
-                <div className="font-serif font-medium text-lg text-primary">{formatCurrency(month.netProfit)}</div>
+              <div className="flex items-center gap-2">
+                <div className="text-right">
+                  <div className="text-xs text-muted-foreground mb-1">Utile Netto</div>
+                  <div className="font-serif font-medium text-lg text-primary">{formatCurrency(month.netProfit)}</div>
+                </div>
+                <ChevronRight className="w-5 h-5 text-muted-foreground/50" />
               </div>
-            </div>
+            </button>
           ))
         )}
         {history?.length === 0 && (

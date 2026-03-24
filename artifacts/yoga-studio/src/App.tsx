@@ -10,6 +10,7 @@ import Customers from "@/pages/customers/index";
 import Accounts from "@/pages/accounts/index";
 import More from "@/pages/more/index";
 import History from "@/pages/history/index";
+import MonthDetail from "@/pages/history/[month]";
 import Teachers from "@/pages/teachers/index";
 import TeacherDetail from "@/pages/teachers/[id]";
 import OtherCosts from "@/pages/other-costs/index";
@@ -36,6 +37,7 @@ function Router() {
         <Route path="/accounts" component={Accounts} />
         <Route path="/more" component={More} />
         <Route path="/history" component={History} />
+        <Route path="/history/:month" component={MonthDetail} />
         <Route path="/teachers" component={Teachers} />
         <Route path="/teachers/:id" component={TeacherDetail} />
         <Route path="/other-costs" component={OtherCosts} />
