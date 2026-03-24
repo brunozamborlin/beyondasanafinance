@@ -5,6 +5,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { MobileLayout } from "@/components/MobileLayout";
 
 import Home from "@/pages/home";
+import Dashboard from "@/pages/dashboard/index";
 import PaymentForm from "@/pages/payments/form";
 import Customers from "@/pages/customers/index";
 import Accounts from "@/pages/accounts/index";
@@ -32,6 +33,7 @@ function Router() {
     <MobileLayout>
       <Switch>
         <Route path="/" component={Home} />
+        <Route path="/dashboard" component={Dashboard} />
         <Route path="/payments/new" component={PaymentForm} />
         <Route path="/customers" component={Customers} />
         <Route path="/accounts" component={Accounts} />

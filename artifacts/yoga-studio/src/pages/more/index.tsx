@@ -1,9 +1,10 @@
 import { PageTransition } from "@/components/PageTransition";
 import { Link } from "wouter";
-import { History, Users, Settings, ChevronRight, Calculator } from "lucide-react";
+import { History, Users, UserRound, Settings, ChevronRight, Calculator } from "lucide-react";
 
 export default function More() {
   const menuItems = [
+    { href: "/customers", icon: UserRound, label: "Clienti" },
     { href: "/history", icon: History, label: "Storico Mesi" },
     { href: "/teachers", icon: Users, label: "Insegnanti" },
     { href: "/other-costs", icon: Calculator, label: "Altre Spese" },

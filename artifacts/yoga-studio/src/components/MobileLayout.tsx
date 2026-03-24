@@ -1,5 +1,5 @@
 import { Link, useLocation } from "wouter";
-import { Home, Users, PieChart, Menu } from "lucide-react";
+import { Home, BarChart3, PieChart, Menu } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export function MobileLayout({ children }: { children: React.ReactNode }) {
@@ -7,7 +7,7 @@ export function MobileLayout({ children }: { children: React.ReactNode }) {
 
   const navItems = [
     { href: "/", icon: Home, label: "Home" },
-    { href: "/customers", icon: Users, label: "Clienti" },
+    { href: "/dashboard", icon: BarChart3, label: "Dashboard" },
     { href: "/accounts", icon: PieChart, label: "Conti" },
     { href: "/more", icon: Menu, label: "Altro" },
   ];

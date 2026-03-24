@@ -1,6 +1,6 @@
 import { Router, type IRouter } from "express";
 import { eq, sql } from "drizzle-orm";
-import { db, paymentsTable, teachersTable, teacherMonthlyHoursTable, otherCostsTable, taxSettingsTable } from "@workspace/db";
+import { db, paymentsTable, productsTable, customersTable, teachersTable, teacherMonthlyHoursTable, otherCostsTable, taxSettingsTable } from "@workspace/db";
 import {
   GetMonthlySummaryParams,
   GetMonthlySummaryResponse,
@@ -63,6 +63,74 @@ async function computeSummary(month: string) {
     netProfit,
   };
 }
+
+router.get("/summary/dashboard", async (_req, res): Promise<void> => {
+  const monthsResult = await db
+    .select({ month: sql<string>`DISTINCT to_char(${paymentsTable.date}::date, 'YYYY-MM')` })
+    .from(paymentsTable)
+    .orderBy(sql`to_char(${paymentsTable.date}::date, 'YYYY-MM') ASC`);
+
+  const monthlyData = [];
+  for (const row of monthsResult) {
+    const summary = await computeSummary(row.month);
+    monthlyData.push(summary);
+  }
+
+  const productStats = await db
+    .select({
+      productId: paymentsTable.productId,
+      productName: productsTable.name,
+      count: sql<number>`COUNT(*)::int`,
+      totalRevenue: sql<number>`COALESCE(SUM(${paymentsTable.amount}), 0)::int`,
+    })
+    .from(paymentsTable)
+    .innerJoin(productsTable, eq(paymentsTable.productId, productsTable.id))
+    .groupBy(paymentsTable.productId, productsTable.name)
+    .orderBy(sql`COUNT(*) DESC`);
+
+  const paymentMethodStats = await db
+    .select({
+      method: paymentsTable.paymentMethod,
+      count: sql<number>`COUNT(*)::int`,
+      totalAmount: sql<number>`COALESCE(SUM(${paymentsTable.amount}), 0)::int`,
+    })
+    .from(paymentsTable)
+    .groupBy(paymentsTable.paymentMethod)
+    .orderBy(sql`COUNT(*) DESC`);
+
+  const teacherStats = await db
+    .select({
+      teacherId: teacherMonthlyHoursTable.teacherId,
+      teacherName: teachersTable.name,
+      totalHours: sql<number>`COALESCE(SUM(${teacherMonthlyHoursTable.hoursWorked}), 0)`,
+      totalCost: sql<number>`COALESCE(SUM(CASE WHEN ${teachersTable.compensationType} = 'manual' THEN ${teacherMonthlyHoursTable.manualCost} ELSE ${teacherMonthlyHoursTable.hoursWorked} * ${teachersTable.hourlyRate} END), 0)::int`,
+    })
+    .from(teacherMonthlyHoursTable)
+    .innerJoin(teachersTable, eq(teacherMonthlyHoursTable.teacherId, teachersTable.id))
+    .groupBy(teacherMonthlyHoursTable.teacherId, teachersTable.name)
+    .orderBy(sql`SUM(CASE WHEN ${teachersTable.compensationType} = 'manual' THEN ${teacherMonthlyHoursTable.manualCost} ELSE ${teacherMonthlyHoursTable.hoursWorked} * ${teachersTable.hourlyRate} END) DESC`);
+
+  const topCustomers = await db
+    .select({
+      customerId: paymentsTable.customerId,
+      customerName: customersTable.fullName,
+      count: sql<number>`COUNT(*)::int`,
+      totalSpent: sql<number>`COALESCE(SUM(${paymentsTable.amount}), 0)::int`,
+    })
+    .from(paymentsTable)
+    .innerJoin(customersTable, eq(paymentsTable.customerId, customersTable.id))
+    .groupBy(paymentsTable.customerId, customersTable.fullName)
+    .orderBy(sql`SUM(${paymentsTable.amount}) DESC`)
+    .limit(10);
+
+  res.json({
+    monthlyData,
+    productStats,
+    paymentMethodStats,
+    teacherStats,
+    topCustomers,
+  });
+});
 
 router.get("/summary/history", async (_req, res): Promise<void> => {
   const monthsResult = await db

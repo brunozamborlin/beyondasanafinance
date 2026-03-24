@@ -43,10 +43,11 @@ Mobile-first web app for a yoga studio owner to track payments, view monthly P&L
 
 ### Features (V1)
 - **Home**: Current month KPIs (revenue, costs, estimated profit) with "Add Payment" CTA
+- **Dashboard**: Analytics charts across all months — revenue/profit trends (AreaChart), top products (BarChart), payment methods (PieChart), top customers, teacher stats
 - **Payments**: Create/edit/delete payments with customer autocomplete, product selection, amount, payment method (Contanti/POS/Bonifico)
-- **Customers**: Search with autocomplete, create new customers
+- **Customers**: Search with autocomplete, create new customers (accessed from Altro menu)
 - **Accounts (Conti)**: Monthly P&L breakdown (revenue, teacher costs, other costs, taxes, net profit)
-- **History (Storico)**: Past months summary list with drill-down
+- **History (Storico)**: Past months summary list with drill-down to month detail
 - **Teachers**: Manage teachers, track monthly hours, cost calculation (hourly/manual)
 - **Teacher Analysis**: Estimated revenue/margin per teacher (labeled as estimates)
 - **Other Costs**: Monthly cost entries by category (affitto, bollette, etc.)
@@ -75,8 +76,8 @@ All under `/api`:
 - `GET/PUT /settings/default-costs`
 
 ### Navigation
-Bottom nav: Home | Clienti | Conti | Altro
-Altro menu: Storico, Insegnanti, Altre Spese, Impostazioni
+Bottom nav: Home | Dashboard | Conti | Altro
+Altro menu: Clienti, Storico, Insegnanti, Altre Spese, Impostazioni
 
 ### UX Rules
 - Mobile-first only (max-width 430px)
