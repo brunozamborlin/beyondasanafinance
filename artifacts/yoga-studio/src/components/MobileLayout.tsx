@@ -13,12 +13,14 @@ export function MobileLayout({ children }: { children: React.ReactNode }) {
   ];
 
   return (
-    <div className="mx-auto w-full max-w-[430px] min-h-screen bg-background relative shadow-2xl overflow-hidden flex flex-col">
-      <main className="flex-1 overflow-y-auto pb-[80px] no-scrollbar">
-        {children}
+    <div className="mx-auto w-full max-w-[430px] h-dvh bg-background relative shadow-2xl flex flex-col">
+      <main className="flex-1 overflow-y-auto no-scrollbar">
+        <div className="pb-4">
+          {children}
+        </div>
       </main>
 
-      <nav className="absolute bottom-0 left-0 right-0 bg-white/80 backdrop-blur-xl border-t border-border/50 pb-safe z-50">
+      <nav className="shrink-0 bg-white/80 backdrop-blur-xl border-t border-border/50 pb-safe z-50">
         <div className="flex items-center justify-around px-2 py-3">
           {navItems.map((item) => {
             const Icon = item.icon;
