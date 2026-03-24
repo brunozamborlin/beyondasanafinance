@@ -1,0 +1,19 @@
+# V1 SCOPE (STRICT)
+
+## INCLUDED
+- Add payment
+- View monthly summary
+- Manage customers
+- Manage products
+- Teacher costs
+- Monthly P&L
+
+## EXCLUDED
+- Attendance tracking
+- Class analytics
+- Cashflow
+- Notifications
+- Multi-user
+- Advanced reporting
+
+If a feature is not listed → DO NOT BUILD

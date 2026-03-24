@@ -1,0 +1,18 @@
+# SEED DATA
+
+Use the provided CSV file to:
+
+1. Create customers (deduplicate by name)
+2. Create products:
+   - Iscrizione
+   - 3 Mesi
+   - 10 Ore
+   - 25 Ore
+   - 5 Ore
+
+3. Create payments:
+   - Map Contanti/POS to paymentMethod
+   - Convert amounts to cents
+   - Use date as paymentDate
+
+Ignore invalid or messy rows (do not block import)

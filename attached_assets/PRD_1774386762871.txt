@@ -1,0 +1,593 @@
+PRD — Yoga Studio Finance Web App (V1)
+
+1. Obiettivo
+
+Creare una web app mobile-first per una singola utente principale (la proprietaria dello studio) che permetta di:
+	•	registrare rapidamente un pagamento/acquisto da smartphone
+	•	vedere il P&L mensile in modo semplice
+	•	monitorare costi insegnanti e altri costi
+	•	consultare storico mensile sintetico
+	•	gestire clienti e correggere pagamenti inseriti in passato
+
+La V1 non deve gestire presenze, check-in o consumo dei pacchetti ore. Quello resta in un’altra app.
+
+⸻
+
+2. Problema da risolvere
+
+Oggi i pagamenti vengono annotati su carta. Questo crea:
+	•	lentezza nell’inserimento
+	•	rischio di errori e typo
+	•	difficoltà nel vedere incassi e costi del mese
+	•	poca visibilità storica
+	•	processo frammentato tra registrazione e controllo dei conti
+
+⸻
+
+3. Principi di prodotto
+	1.	Mobile-first: progettata per uso frequente da telefono.
+	2.	Velocità prima di tutto: inserire un pagamento in meno di 10–15 secondi.
+	3.	Semplicità radicale: niente funzionalità contabili avanzate nella V1.
+	4.	Pochi campi, chiari: no configurazioni complesse nel flusso principale.
+	5.	Modificabilità: uno storico pagamento deve poter essere corretto in seguito.
+	6.	Separazione chiara: questa app gestisce pagamenti e P&L, non presenze.
+
+⸻
+
+4. Utenti
+
+Utente primaria
+	•	proprietaria / responsabile dello studio
+
+Utenti secondari
+	•	nessuno richiesto in V1
+
+⸻
+
+5. Scope V1
+
+Incluso in V1
+	•	registrazione pagamento/acquisto
+	•	ricerca cliente con autocomplete
+	•	creazione nuovo cliente
+	•	listino prodotti fisso
+	•	importo precompilato ma modificabile
+	•	scelta metodo di pagamento
+	•	Home con numeri del mese corrente
+	•	P&L mensile semplice
+	•	gestione costi insegnanti
+	•	gestione altri costi
+	•	storico mesi
+	•	modifica di pagamenti già inseriti
+	•	settings per listino, parametri tasse, insegnanti
+
+Escluso da V1
+	•	tracking presenze / check-in
+	•	integrazione con app esterna
+	•	analisi precisa per classe
+	•	cashflow
+	•	cassa reale disponibile
+	•	notifiche / reminder
+	•	CRM avanzato
+	•	gestione residui pacchetti ore
+	•	logiche complesse di scadenza clienti
+	•	fiscalità avanzata / contabilità ufficiale
+	•	multiutente con permessi
+
+⸻
+
+6. Flussi principali
+
+Flusso 1 — Registra pagamento
+
+L’utente apre l’app e registra un pagamento in una singola schermata.
+
+Campi
+	•	Cliente
+	•	Prodotto
+	•	Importo
+	•	Metodo pagamento
+	•	Data
+	•	Nota opzionale
+
+Regole
+	•	data default = oggi
+	•	prodotto scelto da listino
+	•	importo precompilato dal listino
+	•	importo modificabile liberamente
+	•	nessun warning se prezzo diverso dal default
+	•	cliente ricercabile con autocomplete
+	•	possibilità di creare nuovo cliente al volo
+
+Metodi di pagamento
+	•	Contanti
+	•	POS
+	•	Bonifico
+
+⸻
+
+Flusso 2 — Consulta Home
+
+L’utente apre l’app e vede subito il mese corrente.
+
+Dati mostrati
+	•	Incassi mese
+	•	Costi mese
+	•	Utile stimato mese
+	•	CTA “Registra pagamento”
+
+La Home non deve essere affollata.
+
+⸻
+
+Flusso 3 — Consulta conti del mese
+
+L’utente entra nella sezione conti e vede il P&L sintetico del mese corrente.
+
+Breakdown
+	•	Incassi
+	•	Costi insegnanti
+	•	Altri costi
+	•	Tasse stimate
+	•	Utile finale
+
+⸻
+
+Flusso 4 — Consulta storico
+
+L’utente può vedere i mesi passati.
+
+Vista storico
+
+Elenco mesi con:
+	•	mese
+	•	incassi
+	•	costi
+	•	utile
+
+Vista dettaglio mese
+	•	incassi
+	•	costi insegnanti
+	•	altri costi
+	•	tasse stimate
+	•	utile finale
+
+⸻
+
+Flusso 5 — Modifica pagamento esistente
+
+L’utente può aprire un pagamento già registrato e modificarlo.
+
+Azioni consentite
+	•	cambiare cliente
+	•	cambiare prodotto
+	•	cambiare importo
+	•	cambiare metodo pagamento
+	•	cambiare data
+	•	cambiare nota
+	•	eliminare record
+
+Non serve accesso super rapido in Home; basta da dettaglio/storico.
+
+⸻
+
+7. Feature requirements
+
+7.1 Home
+
+Obiettivo
+
+Dare una visione immediata del mese corrente.
+
+Requisiti
+	•	mostrare solo il mese corrente
+	•	mostrare KPI principali
+	•	avere bottone principale per nuovo pagamento
+	•	avere accesso rapido a Conti, Clienti, Storico
+
+KPI minimi
+	•	Incassi mese
+	•	Costi mese
+	•	Utile stimato
+
+⸻
+
+7.2 Pagamenti
+
+Obiettivo
+
+Essere il cuore operativo della V1.
+
+Requisiti funzionali
+	•	creare un nuovo pagamento
+	•	modificare un pagamento esistente
+	•	eliminare un pagamento
+	•	salvare una nota opzionale
+	•	supportare listino fisso
+	•	supportare importo manualmente editabile
+	•	supportare data personalizzabile
+
+Requisiti UX
+	•	schermata singola
+	•	pochi campi
+	•	pulsanti grandi
+	•	ottimizzato per uso da smartphone
+
+⸻
+
+7.3 Clienti
+
+Obiettivo
+
+Ridurre typo e semplificare la selezione durante inserimento pagamenti.
+
+Requisiti
+	•	ricerca clienti con autocomplete
+	•	creazione veloce nuovo cliente
+	•	lista clienti semplice
+	•	scheda minima cliente
+
+Dati minimi cliente
+	•	nome
+	•	telefono opzionale
+	•	note opzionali
+
+Non richiesto in V1
+	•	storico pagamenti cliente completo come vista principale
+	•	segmentazione avanzata
+	•	stato attivo/in scadenza affidabile
+
+⸻
+
+7.4 Prodotti / listino
+
+Obiettivo
+
+Evitare testo libero e standardizzare gli inserimenti.
+
+Requisiti
+	•	catalogo prodotti fisso
+	•	modificabile solo in Settings
+	•	prezzo default associato al prodotto
+	•	prodotto selezionabile da elenco semplice
+
+Esempi prodotti
+	•	Iscrizione
+	•	3 Mesi
+	•	10 Ore
+	•	25 Ore
+	•	5 Ore
+	•	eventuali prodotti speciali
+
+⸻
+
+7.5 Conti / P&L
+
+Obiettivo
+
+Offrire una vista gestionale semplice del mese.
+
+Formula V1
+	•	Incassi = somma pagamenti registrati nel mese
+	•	Costi insegnanti = calcolo automatico in base alle ore inserite e formule compenso
+	•	Altri costi = inserimento manuale
+	•	Tasse stimate = calcolo automatico in base a parametri da settings
+	•	Utile finale = Incassi - Costi insegnanti - Altri costi - Tasse stimate
+
+Note
+
+Questo è un P&L gestionale, non contabile/fiscale ufficiale.
+
+⸻
+
+7.6 Insegnanti
+
+Obiettivo
+
+Calcolare i costi insegnanti in modo semplice.
+
+Requisiti
+	•	anagrafica insegnanti
+	•	supporto compensi misti:
+	•	tariffa oraria
+	•	percentuale
+	•	inserimento manuale ore lavorate per mese
+	•	calcolo automatico costo mensile
+
+Tipi compenso supportati
+	1.	Orario: costo = ore × tariffa
+	2.	manuale
+
+Nota critica
+
+Dato che i ricavi non sono attribuiti in modo affidabile a classi specifiche in questa app, qualsiasi analisi insegnanti basata sui ricavi sarà una stima, non un dato reale.
+
+⸻
+
+7.7 Analisi insegnanti (stimata)
+
+Obiettivo
+
+Dare una vista orientativa dei costi insegnanti rispetto ai ricavi medi.
+
+Modello
+	•	valore medio ora = incassi mese / ore totali mese
+	•	ricavo stimato insegnante = valore medio ora × ore insegnante
+	•	margine stimato = ricavo stimato - costo insegnante
+
+Requisiti
+	•	etichettare chiaramente i dati come “stima”
+	•	non presentarli come ricavo reale per classe/insegnante
+
+⸻
+
+7.8 Altri costi
+
+Obiettivo
+
+Permettere alla proprietaria di inserire costi non legati agli insegnanti.
+
+Requisiti
+	•	inserimento manuale per mese
+	•	categorie semplici, ad esempio:
+	•	affitto
+	•	bollette
+	•	studio
+	•	altre spese
+	•	supporto a default predefiniti, almeno per affitto
+
+⸻
+
+7.9 Settings
+
+Obiettivo
+
+Tenere fuori dal flusso principale tutta la configurazione rara.
+
+Settings minimi
+	•	listino prodotti
+	•	parametri tasse
+	•	anagrafica insegnanti
+	•	formule compenso insegnanti
+	•	default affitto / costi ricorrenti
+
+⸻
+
+8. Informazioni da mostrare in UI
+
+Home
+	•	CTA Registra pagamento
+	•	Incassi mese
+	•	Costi mese
+	•	Utile stimato
+
+Clienti
+	•	ricerca
+	•	elenco semplice
+	•	pulsante Nuovo cliente
+
+Pagamento
+	•	cliente
+	•	prodotto
+	•	importo
+	•	metodo pagamento
+	•	data
+	•	nota
+
+Conti
+	•	Incassi
+	•	Costi insegnanti
+	•	Altri costi
+	•	Tasse stimate
+	•	Utile finale
+
+Storico
+	•	lista mesi
+	•	dettaglio mese
+
+Insegnanti
+	•	ore del mese
+	•	costo totale
+	•	eventuale stima valore/margine
+
+⸻
+
+9. Navigazione proposta
+
+Bottom navigation mobile:
+	•	Home
+	•	Clienti
+	•	Conti
+	•	Altro
+
+Dentro Altro:
+	•	Storico
+	•	Insegnanti
+	•	Settings
+
+⸻
+
+10. Data model minimo
+
+Customers
+	•	id
+	•	full_name
+	•	phone (optional)
+	•	notes (optional)
+	•	created_at
+	•	updated_at
+
+Products
+	•	id
+	•	name
+	•	default_price
+	•	active
+	•	sort_order
+
+Payments
+	•	id
+	•	customer_id
+	•	product_id
+	•	amount
+	•	payment_method
+	•	date
+	•	note
+	•	created_at
+	•	updated_at
+
+Teachers
+	•	id
+	•	name
+	•	compensation_type (hourly, manual)
+	•	hourly_rate (nullable)
+	•	active
+
+TeacherMonthlyHours
+	•	id
+	•	teacher_id
+	•	month
+	•	hours_worked
+
+OtherCosts
+	•	id
+	•	month
+	•	category
+	•	amount
+	•	note
+
+TaxSettings
+	•	id
+	•	tax_mode
+	•	parameters_json
+
+MonthlySummaries
+	•	month
+	•	revenue
+	•	teacher_costs
+	•	other_costs
+	•	estimated_taxes
+	•	net_profit
+
+⸻
+
+11. Business rules
+
+Pagamenti
+	•	ogni pagamento appartiene a un solo cliente
+	•	ogni pagamento appartiene a un solo prodotto
+	•	l’importo default deriva dal prodotto
+	•	l’importo può essere modificato liberamente
+
+P&L
+	•	il P&L si basa sui pagamenti registrati nel mese
+	•	nessuna logica di competenza avanzata in V1
+
+Clienti
+	•	il cliente può essere creato direttamente nel flusso pagamento
+	•	evitare typo tramite autocomplete e riuso clienti esistenti
+
+Insegnanti
+	•	ore mese inserite manualmente
+	•	costo calcolato in automatico
+
+⸻
+
+12. Non-functional requirements
+
+Performance
+	•	schermata nuovo pagamento veloce e reattiva su mobile
+	•	autocomplete clienti rapido anche con lista clienti crescente
+
+UX
+	•	nessuna tabella larga come vista principale
+	•	una sola colonna su mobile
+	•	bottoni grandi
+	•	interazioni minime
+
+Robustezza
+	•	modifiche pagamenti consentite
+	•	cancellazioni consentite
+	•	gestione dati “sporchi” tollerante
+
+Sicurezza
+	•	accesso autenticato base
+	•	backup dati
+	•	nessuna esigenza enterprise nella V1
+
+⸻
+
+13. Rischi principali
+	1.	Dati clienti duplicati o typo
+	•	mitigazione: autocomplete + riuso clienti
+	2.	Prezzi modificati senza controllo
+	•	mitigazione: accettato per semplicità operativa
+	3.	Analisi insegnanti interpretata come dato reale
+	•	mitigazione: etichettare come stima
+	4.	Scope creep verso presenze/check-in
+	•	mitigazione: escluderlo esplicitamente dalla V1
+
+⸻
+
+14. Priorità
+
+Must have
+	•	Home mese corrente
+	•	Nuovo pagamento
+	•	Ricerca cliente + nuovo cliente
+	•	Listino prodotti
+	•	Metodi pagamento
+	•	Conti mese
+	•	Storico mesi
+	•	Altri costi
+	•	Insegnanti con ore mensili
+	•	Tasse da settings
+	•	Modifica pagamento
+
+Should have
+	•	Dettaglio mese
+	•	Eliminazione pagamento
+	•	Default costi ricorrenti
+	•	Analisi insegnanti stimata
+
+Nice to have
+	•	merge clienti duplicati
+	•	tag/note migliori
+	•	export CSV
+
+⸻
+
+15. Metriche di successo V1
+	•	tempo medio inserimento pagamento < 15 secondi
+	•	uso frequente da mobile senza abbandono del flusso
+	•	riduzione uso carta per registrazione pagamenti
+	•	possibilità di chiudere il mese vedendo incassi/costi/utile senza fogli esterni
+	•	correzione facile di errori inseriti
+
+
+17. Raccomandazione di implementazione
+
+Ordine di build consigliato:
+
+Fase 1
+	•	auth base
+	•	customers
+	•	products
+	•	payments
+	•	mobile flow nuovo pagamento
+	•	Home mese corrente
+
+Fase 2
+	•	conti mese
+	•	other costs
+	•	settings tasse
+	•	storico mesi
+
+Fase 3
+	•	teachers
+	•	ore mensili
+	•	costo automatico
+	•	analisi stimata insegnanti
+
+⸻
+
+Passo successivo più utile: wireframe delle 5 schermate principali oppure schema DB/API.

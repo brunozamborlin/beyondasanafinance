@@ -1,0 +1,20 @@
+# DATA RULES
+
+- Payments are the source of truth
+- No class-level revenue (not available)
+- No attempt to reconstruct missing data
+- Teacher analysis is ESTIMATED only
+- Manual override is allowed everywhere
+
+# Important constraints
+
+- Products are fixed list
+- Prices can be overridden manually
+- No validation blocking user
+
+# Teacher costs
+
+- hourly → computed
+- manual → user input
+
+No percentage logic for now

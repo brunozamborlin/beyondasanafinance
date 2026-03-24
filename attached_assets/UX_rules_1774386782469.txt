@@ -1,0 +1,23 @@
+# UX RULES (MANDATORY)
+
+1. Mobile-first only
+2. One primary action per screen
+3. No tables as default UI
+4. Max 5–6 inputs per form
+5. No multi-column layouts
+6. No dashboards with multiple panels
+7. No complex filters in V1
+8. No financial jargon (keep labels simple)
+
+# Payment Flow Rules
+- Must be completable in <10 seconds
+- Default values everywhere
+- Minimal typing required
+
+# What NOT to build
+- No spreadsheet-like UI
+- No multi-month tables
+- No advanced analytics
+- No nested tabs
+
+If unsure → simplify.

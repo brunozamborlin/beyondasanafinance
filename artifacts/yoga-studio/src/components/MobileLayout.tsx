@@ -1,0 +1,47 @@
+import { Link, useLocation } from "wouter";
+import { Home, Users, PieChart, Menu } from "lucide-react";
+import { cn } from "@/lib/utils";
+
+export function MobileLayout({ children }: { children: React.ReactNode }) {
+  const [location] = useLocation();
+
+  const navItems = [
+    { href: "/", icon: Home, label: "Home" },
+    { href: "/customers", icon: Users, label: "Clienti" },
+    { href: "/accounts", icon: PieChart, label: "Conti" },
+    { href: "/more", icon: Menu, label: "Altro" },
+  ];
+
+  return (
+    <div className="mx-auto w-full max-w-[430px] min-h-screen bg-background relative shadow-2xl overflow-hidden flex flex-col">
+      <main className="flex-1 overflow-y-auto pb-[80px] no-scrollbar">
+        {children}
+      </main>
+
+      <nav className="absolute bottom-0 left-0 right-0 bg-white/80 backdrop-blur-xl border-t border-border/50 pb-safe z-50">
+        <div className="flex items-center justify-around px-2 py-3">
+          {navItems.map((item) => {
+            const Icon = item.icon;
+            const isActive = location === item.href || (item.href !== "/" && location.startsWith(item.href));
+            
+            return (
+              <Link 
+                key={item.href} 
+                href={item.href}
+                className={cn(
+                  "flex flex-col items-center gap-1 min-w-[70px] px-2 py-1 rounded-xl transition-all duration-300",
+                  isActive ? "text-primary" : "text-muted-foreground hover:text-foreground hover:bg-black/5"
+                )}
+              >
+                <Icon className={cn("w-6 h-6 transition-transform duration-300", isActive && "scale-110")} />
+                <span className={cn("text-[10px] font-medium transition-all duration-300", isActive && "font-semibold")}>
+                  {item.label}
+                </span>
+              </Link>
+            );
+          })}
+        </div>
+      </nav>
+    </div>
+  );
+}

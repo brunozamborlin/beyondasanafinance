@@ -1,0 +1,221 @@
+Procedo con wireframe mobile (low-fi, ma concreti) per le 5 schermate chiave. L’obiettivo è ottimizzare davvero il flusso da telefono.
+
+⸻
+
+1. Home
+
+[ Header ]
+Studio Yoga
+
+[ CTA principale ]
++ Registra pagamento
+
+[ Card ]
+Questo mese
+Incassi: €5.240
+Costi: €2.100
+Utile: €3.140
+
+[ Nav bottom ]
+Home | Clienti | Conti | Altro
+
+Note UX
+	•	CTA grande e centrale → è l’azione principale
+	•	niente altre distrazioni
+	•	numeri leggibili, niente dettagli inutili
+
+⸻
+
+2. Registra pagamento (core)
+
+[ Header ]
+Nuovo pagamento
+
+[ Cliente ]
+🔍 Cerca cliente...
+(+ Nuovo)
+
+[ Prodotto ]
+[ 3 Mesi ▼ ]
+
+[ Importo ]
+€ 270   (editabile)
+
+[ Metodo pagamento ]
+[ Contanti ] [ POS ] [ Bonifico ]
+
+[ Data ]
+Oggi ▼
+
+[ + Nota (opzionale) ]
+
+[ CTA ]
+Salva pagamento
+
+Flow reale
+	1.	cerca cliente → tap
+	2.	seleziona prodotto → auto prezzo
+	3.	metodo pagamento → tap
+	4.	salva
+
+→ 5–10 secondi
+
+⸻
+
+3. Clienti
+
+[ Header ]
+Clienti
+
+[ Search ]
+🔍 Cerca cliente...
+
+[ Lista ]
+Miriam Griepelin
+Giulia Pasqualotto
+Francesca Molon
+...
+
+[ CTA floating ]
++ Nuovo cliente
+
+[ Nav bottom ]
+Home | Clienti | Conti | Altro
+
+
+⸻
+
+4. Conti (mese corrente)
+
+[ Header ]
+Marzo 2026
+
+[ Card ]
+Incassi
+€ 5.240
+
+[ Card ]
+Costi insegnanti
+€ 1.600
+
+[ Card ]
+Altri costi
+€ 500   [ Modifica ]
+
+[ Card ]
+Tasse stimate
+€ 900
+
+[ Divider ]
+
+[ Totale ]
+Utile
+€ 2.240
+
+[ Nav bottom ]
+Home | Clienti | Conti | Altro
+
+Note
+	•	ogni blocco è una card → leggibile
+	•	niente tabella
+	•	modifica solo dove serve (altri costi)
+
+⸻
+
+5. Storico mesi
+
+(accessibile da “Altro”)
+
+[ Header ]
+Storico
+
+[ Lista mesi ]
+Febbraio 2026
+Incassi €4.800 | Utile €2.000 →
+
+Gennaio 2026
+Incassi €5.100 | Utile €2.300 →
+
+Dicembre 2025
+Incassi €4.200 | Utile €1.800 →
+
+
+⸻
+
+6. Dettaglio mese
+
+[ Header ]
+Febbraio 2026
+
+Incassi: €4.800
+Costi insegnanti: €1.500
+Altri costi: €600
+Tasse: €800
+
+[ Divider ]
+
+Utile: €1.900
+
+
+⸻
+
+7. Insegnanti
+
+[ Header ]
+Insegnanti
+
+[ Lista ]
+Laura
+Ore: 40
+Costo: €800
+
+Marco
+Ore: 30
+Costo: €600
+
+[ Tap → dettaglio ]
+
+
+⸻
+
+8. Dettaglio insegnante (con stima)
+
+Laura
+
+Ore mese: 40
+Costo: €800
+
+Valore medio ora: €25
+Ricavo stimato: €1.000
+
+Margine stimato: €200
+
+(etichetta piccola: “stima”)
+
+⸻
+
+9. Altro
+
+Altro
+
+- Storico
+- Insegnanti
+- Settings
+
+
+⸻
+
+Feedback critico (importante)
+
+Questa UI funziona solo se rispetti 3 regole:
+	1.	Niente tabelle tipo Excel
+	2.	1 azione principale per schermata
+	3.	Zero complessità visiva
+
+Se inizi ad aggiungere:
+	•	breakdown strani
+	•	grafici inutili
+	•	troppe metriche
+
+→ torni al problema iniziale (crowded).
+

@@ -1,22 +1,34 @@
 openapi: 3.1.0
 info:
-  # Do not change the title, if the title changes, the import paths will be broken
   title: Api
   version: 0.1.0
-  description: API specification
+  description: Yoga Studio Finance API
 servers:
   - url: /api
     description: Base API path
 tags:
   - name: health
     description: Health operations
+  - name: customers
+    description: Customer operations
+  - name: products
+    description: Product operations
+  - name: payments
+    description: Payment operations
+  - name: teachers
+    description: Teacher operations
+  - name: otherCosts
+    description: Other costs operations
+  - name: summary
+    description: Monthly summary operations
+  - name: settings
+    description: Settings operations
 paths:
   /healthz:
     get:
       operationId: healthCheck
       tags: [health]
       summary: Health check
-      description: Returns server health status
       responses:
         "200":
           description: Healthy
@@ -24,6 +36,541 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+
+  /customers:
+    get:
+      operationId: listCustomers
+      tags: [customers]
+      summary: List all customers
+      parameters:
+        - name: search
+          in: query
+          schema:
+            type: string
+      responses:
+        "200":
+          description: List of customers
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Customer"
+    post:
+      operationId: createCustomer
+      tags: [customers]
+      summary: Create a customer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateCustomer"
+      responses:
+        "201":
+          description: Created customer
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Customer"
+
+  /customers/{id}:
+    get:
+      operationId: getCustomer
+      tags: [customers]
+      summary: Get a customer by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Customer
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Customer"
+    put:
+      operationId: updateCustomer
+      tags: [customers]
+      summary: Update a customer
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateCustomer"
+      responses:
+        "200":
+          description: Updated customer
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Customer"
+
+  /products:
+    get:
+      operationId: listProducts
+      tags: [products]
+      summary: List all products
+      responses:
+        "200":
+          description: List of products
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Product"
+    post:
+      operationId: createProduct
+      tags: [products]
+      summary: Create a product
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateProduct"
+      responses:
+        "201":
+          description: Created product
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Product"
+
+  /products/{id}:
+    put:
+      operationId: updateProduct
+      tags: [products]
+      summary: Update a product
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateProduct"
+      responses:
+        "200":
+          description: Updated product
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Product"
+
+  /payments:
+    get:
+      operationId: listPayments
+      tags: [payments]
+      summary: List payments with optional month filter
+      parameters:
+        - name: month
+          in: query
+          schema:
+            type: string
+          description: "Month in YYYY-MM format"
+      responses:
+        "200":
+          description: List of payments
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Payment"
+    post:
+      operationId: createPayment
+      tags: [payments]
+      summary: Create a payment
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreatePayment"
+      responses:
+        "201":
+          description: Created payment
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Payment"
+
+  /payments/{id}:
+    get:
+      operationId: getPayment
+      tags: [payments]
+      summary: Get a payment by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Payment
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Payment"
+    put:
+      operationId: updatePayment
+      tags: [payments]
+      summary: Update a payment
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreatePayment"
+      responses:
+        "200":
+          description: Updated payment
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Payment"
+    delete:
+      operationId: deletePayment
+      tags: [payments]
+      summary: Delete a payment
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+
+  /teachers:
+    get:
+      operationId: listTeachers
+      tags: [teachers]
+      summary: List all teachers
+      responses:
+        "200":
+          description: List of teachers
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Teacher"
+    post:
+      operationId: createTeacher
+      tags: [teachers]
+      summary: Create a teacher
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateTeacher"
+      responses:
+        "201":
+          description: Created teacher
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Teacher"
+
+  /teachers/{id}:
+    put:
+      operationId: updateTeacher
+      tags: [teachers]
+      summary: Update a teacher
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateTeacher"
+      responses:
+        "200":
+          description: Updated teacher
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Teacher"
+
+  /teachers/{id}/hours:
+    get:
+      operationId: getTeacherHours
+      tags: [teachers]
+      summary: Get teacher hours for a month
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: month
+          in: query
+          required: true
+          schema:
+            type: string
+          description: "Month in YYYY-MM format"
+      responses:
+        "200":
+          description: Teacher monthly hours
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TeacherMonthlyHours"
+    put:
+      operationId: upsertTeacherHours
+      tags: [teachers]
+      summary: Set teacher hours for a month
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpsertTeacherHours"
+      responses:
+        "200":
+          description: Updated teacher hours
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TeacherMonthlyHours"
+
+  /other-costs:
+    get:
+      operationId: listOtherCosts
+      tags: [otherCosts]
+      summary: List other costs for a month
+      parameters:
+        - name: month
+          in: query
+          required: true
+          schema:
+            type: string
+          description: "Month in YYYY-MM format"
+      responses:
+        "200":
+          description: List of other costs
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/OtherCost"
+    post:
+      operationId: createOtherCost
+      tags: [otherCosts]
+      summary: Create an other cost
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateOtherCost"
+      responses:
+        "201":
+          description: Created other cost
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OtherCost"
+
+  /other-costs/{id}:
+    put:
+      operationId: updateOtherCost
+      tags: [otherCosts]
+      summary: Update an other cost
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateOtherCost"
+      responses:
+        "200":
+          description: Updated other cost
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OtherCost"
+    delete:
+      operationId: deleteOtherCost
+      tags: [otherCosts]
+      summary: Delete an other cost
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "204":
+          description: Deleted
+
+  /summary/{month}:
+    get:
+      operationId: getMonthlySummary
+      tags: [summary]
+      summary: Get monthly P&L summary
+      parameters:
+        - name: month
+          in: path
+          required: true
+          schema:
+            type: string
+          description: "Month in YYYY-MM format"
+      responses:
+        "200":
+          description: Monthly summary
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MonthlySummary"
+
+  /summary/history:
+    get:
+      operationId: getMonthlyHistory
+      tags: [summary]
+      summary: Get history of monthly summaries
+      responses:
+        "200":
+          description: List of monthly summaries
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/MonthlySummary"
+
+  /teachers/analysis/{month}:
+    get:
+      operationId: getTeacherAnalysis
+      tags: [teachers]
+      summary: Get estimated teacher analysis for a month
+      parameters:
+        - name: month
+          in: path
+          required: true
+          schema:
+            type: string
+          description: "Month in YYYY-MM format"
+      responses:
+        "200":
+          description: Teacher analysis
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/TeacherAnalysis"
+
+  /settings/tax:
+    get:
+      operationId: getTaxSettings
+      tags: [settings]
+      summary: Get tax settings
+      responses:
+        "200":
+          description: Tax settings
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TaxSettings"
+    put:
+      operationId: updateTaxSettings
+      tags: [settings]
+      summary: Update tax settings
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateTaxSettings"
+      responses:
+        "200":
+          description: Updated tax settings
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TaxSettings"
+
+  /settings/default-costs:
+    get:
+      operationId: getDefaultCosts
+      tags: [settings]
+      summary: Get default recurring costs
+      responses:
+        "200":
+          description: Default costs
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/DefaultCost"
+    put:
+      operationId: updateDefaultCosts
+      tags: [settings]
+      summary: Update default recurring costs
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: "#/components/schemas/DefaultCost"
+      responses:
+        "200":
+          description: Updated default costs
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/DefaultCost"
+
 components:
   schemas:
     HealthStatus:
@@ -34,3 +581,346 @@ components:
       required:
         - status
 
+    Customer:
+      type: object
+      properties:
+        id:
+          type: integer
+        fullName:
+          type: string
+        phone:
+          type: string
+          nullable: true
+        notes:
+          type: string
+          nullable: true
+        createdAt:
+          type: string
+        updatedAt:
+          type: string
+      required:
+        - id
+        - fullName
+        - createdAt
+        - updatedAt
+
+    CreateCustomer:
+      type: object
+      properties:
+        fullName:
+          type: string
+        phone:
+          type: string
+          nullable: true
+        notes:
+          type: string
+          nullable: true
+      required:
+        - fullName
+
+    Product:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        defaultPrice:
+          type: integer
+          description: Price in cents
+        active:
+          type: boolean
+        sortOrder:
+          type: integer
+      required:
+        - id
+        - name
+        - defaultPrice
+        - active
+        - sortOrder
+
+    CreateProduct:
+      type: object
+      properties:
+        name:
+          type: string
+        defaultPrice:
+          type: integer
+          description: Price in cents
+        active:
+          type: boolean
+        sortOrder:
+          type: integer
+      required:
+        - name
+        - defaultPrice
+
+    Payment:
+      type: object
+      properties:
+        id:
+          type: integer
+        customerId:
+          type: integer
+        productId:
+          type: integer
+        amount:
+          type: integer
+          description: Amount in cents
+        paymentMethod:
+          type: string
+          enum: [contanti, pos, bonifico]
+        date:
+          type: string
+        note:
+          type: string
+          nullable: true
+        createdAt:
+          type: string
+        updatedAt:
+          type: string
+        customerName:
+          type: string
+        productName:
+          type: string
+      required:
+        - id
+        - customerId
+        - productId
+        - amount
+        - paymentMethod
+        - date
+        - createdAt
+        - updatedAt
+        - customerName
+        - productName
+
+    CreatePayment:
+      type: object
+      properties:
+        customerId:
+          type: integer
+        productId:
+          type: integer
+        amount:
+          type: integer
+          description: Amount in cents
+        paymentMethod:
+          type: string
+          enum: [contanti, pos, bonifico]
+        date:
+          type: string
+        note:
+          type: string
+          nullable: true
+      required:
+        - customerId
+        - productId
+        - amount
+        - paymentMethod
+        - date
+
+    Teacher:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        compensationType:
+          type: string
+          enum: [hourly, manual]
+        hourlyRate:
+          type: integer
+          nullable: true
+          description: Rate in cents
+        active:
+          type: boolean
+      required:
+        - id
+        - name
+        - compensationType
+        - active
+
+    CreateTeacher:
+      type: object
+      properties:
+        name:
+          type: string
+        compensationType:
+          type: string
+          enum: [hourly, manual]
+        hourlyRate:
+          type: integer
+          nullable: true
+          description: Rate in cents
+        active:
+          type: boolean
+      required:
+        - name
+        - compensationType
+
+    TeacherMonthlyHours:
+      type: object
+      properties:
+        id:
+          type: integer
+        teacherId:
+          type: integer
+        month:
+          type: string
+        hoursWorked:
+          type: number
+        manualCost:
+          type: integer
+          nullable: true
+          description: Manual cost in cents for manual compensation type
+      required:
+        - id
+        - teacherId
+        - month
+        - hoursWorked
+
+    UpsertTeacherHours:
+      type: object
+      properties:
+        month:
+          type: string
+        hoursWorked:
+          type: number
+        manualCost:
+          type: integer
+          nullable: true
+          description: Manual cost in cents
+      required:
+        - month
+        - hoursWorked
+
+    OtherCost:
+      type: object
+      properties:
+        id:
+          type: integer
+        month:
+          type: string
+        category:
+          type: string
+        amount:
+          type: integer
+          description: Amount in cents
+        note:
+          type: string
+          nullable: true
+      required:
+        - id
+        - month
+        - category
+        - amount
+
+    CreateOtherCost:
+      type: object
+      properties:
+        month:
+          type: string
+        category:
+          type: string
+        amount:
+          type: integer
+          description: Amount in cents
+        note:
+          type: string
+          nullable: true
+      required:
+        - month
+        - category
+        - amount
+
+    MonthlySummary:
+      type: object
+      properties:
+        month:
+          type: string
+        revenue:
+          type: integer
+          description: Total revenue in cents
+        teacherCosts:
+          type: integer
+          description: Total teacher costs in cents
+        otherCosts:
+          type: integer
+          description: Total other costs in cents
+        estimatedTaxes:
+          type: integer
+          description: Estimated taxes in cents
+        netProfit:
+          type: integer
+          description: Net profit in cents
+      required:
+        - month
+        - revenue
+        - teacherCosts
+        - otherCosts
+        - estimatedTaxes
+        - netProfit
+
+    TeacherAnalysis:
+      type: object
+      properties:
+        teacherId:
+          type: integer
+        teacherName:
+          type: string
+        hoursWorked:
+          type: number
+        totalCost:
+          type: integer
+          description: In cents
+        avgHourlyValue:
+          type: integer
+          description: In cents
+        estimatedRevenue:
+          type: integer
+          description: In cents
+        estimatedMargin:
+          type: integer
+          description: In cents
+      required:
+        - teacherId
+        - teacherName
+        - hoursWorked
+        - totalCost
+        - avgHourlyValue
+        - estimatedRevenue
+        - estimatedMargin
+
+    TaxSettings:
+      type: object
+      properties:
+        id:
+          type: integer
+        taxRate:
+          type: number
+          description: Tax rate as percentage (e.g. 22 for 22%)
+      required:
+        - id
+        - taxRate
+
+    UpdateTaxSettings:
+      type: object
+      properties:
+        taxRate:
+          type: number
+      required:
+        - taxRate
+
+    DefaultCost:
+      type: object
+      properties:
+        category:
+          type: string
+        amount:
+          type: integer
+          description: Amount in cents
+      required:
+        - category
+        - amount

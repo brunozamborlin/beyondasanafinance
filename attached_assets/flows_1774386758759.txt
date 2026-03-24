@@ -1,0 +1,18 @@
+# PRIMARY FLOW: ADD PAYMENT
+
+1. Open app
+2. Tap "Add Payment"
+3. Search customer
+4. Select product
+5. Select payment method
+6. Tap Save
+
+Target time: < 10 seconds
+
+# SECONDARY FLOW: CHECK MONTH
+
+1. Open app
+2. See Home
+3. Read totals
+
+No navigation required

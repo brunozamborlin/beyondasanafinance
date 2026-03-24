@@ -1,0 +1,17 @@
+packages:
+  "framer-motion": "Smooth page transitions and micro-interactions for a premium feel"
+  "date-fns": "Easy date manipulation and month formatting"
+  "date-fns-tz": "Timezone support for dates if needed"
+  "react-hook-form": "Performant and easy form state management"
+  "@hookform/resolvers": "Zod validation resolver for forms"
+  "clsx": "Utility for constructing className strings conditionally"
+  "tailwind-merge": "Utility to merge tailwind classes without style conflicts"
+  "lucide-react": "Beautiful, consistent icons"
+  "zod": "Schema validation for forms"
+
+images: []
+
+notes:
+  - "The app uses a mobile-first layout constrained to max-width 430px (standard mobile dimension) centered on screen to ensure a consistent experience even on desktop."
+  - "All amounts from API are in cents and converted to EUR on the client."
+  - "Forms use Italian labels per the UX rules."
