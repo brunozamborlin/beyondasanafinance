@@ -11,7 +11,7 @@ export default function History() {
   return (
     <PageTransition className="min-h-screen bg-background">
       <header className="px-6 py-4 flex items-center gap-4 border-b border-border/50 bg-white/80 backdrop-blur-md sticky top-0 z-10">
-        <button onClick={() => window.history.back()} className="p-2 -ml-2 rounded-full hover:bg-black/5 transition-colors">
+        <button onClick={() => navigate("/more")} className="p-2 -ml-2 rounded-full hover:bg-black/5 transition-colors">
           <ChevronLeft className="w-6 h-6 text-foreground" />
         </button>
         <h1 className="text-xl font-serif font-medium">Storico</h1>
