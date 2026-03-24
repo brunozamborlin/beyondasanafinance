@@ -104,11 +104,26 @@ router.get("/summary/dashboard", async (_req, res): Promise<void> => {
       teacherName: teachersTable.name,
       totalHours: sql<number>`COALESCE(SUM(${teacherMonthlyHoursTable.hoursWorked}), 0)`,
       totalCost: sql<number>`COALESCE(SUM(CASE WHEN ${teachersTable.compensationType} = 'manual' THEN ${teacherMonthlyHoursTable.manualCost} ELSE ${teacherMonthlyHoursTable.hoursWorked} * ${teachersTable.hourlyRate} END), 0)::int`,
+      monthsActive: sql<number>`COUNT(DISTINCT ${teacherMonthlyHoursTable.month})::int`,
     })
     .from(teacherMonthlyHoursTable)
     .innerJoin(teachersTable, eq(teacherMonthlyHoursTable.teacherId, teachersTable.id))
     .groupBy(teacherMonthlyHoursTable.teacherId, teachersTable.name)
     .orderBy(sql`SUM(CASE WHEN ${teachersTable.compensationType} = 'manual' THEN ${teacherMonthlyHoursTable.manualCost} ELSE ${teacherMonthlyHoursTable.hoursWorked} * ${teachersTable.hourlyRate} END) DESC`);
+
+  const totalRevenueAll = monthlyData.reduce((sum: number, m: any) => sum + m.revenue, 0);
+  const totalTeacherCostsAll = monthlyData.reduce((sum: number, m: any) => sum + m.teacherCosts, 0);
+
+  const teacherProfitability = teacherStats.map((t: any) => {
+    const costShare = totalTeacherCostsAll > 0 ? t.totalCost / totalTeacherCostsAll : 0;
+    const attributedRevenue = Math.round(totalRevenueAll * costShare);
+    const profit = attributedRevenue - t.totalCost;
+    return {
+      ...t,
+      attributedRevenue,
+      profit,
+    };
+  }).sort((a: any, b: any) => b.profit - a.profit);
 
   const topCustomers = await db
     .select({
@@ -127,7 +142,7 @@ router.get("/summary/dashboard", async (_req, res): Promise<void> => {
     monthlyData,
     productStats,
     paymentMethodStats,
-    teacherStats,
+    teacherStats: teacherProfitability,
     topCustomers,
   });
 });
