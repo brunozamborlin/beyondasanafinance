@@ -11,12 +11,12 @@ export default function Home() {
   return (
     <PageTransition className="p-6">
       <header className="mb-8 mt-4 flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-serif text-foreground">Namaste 🙏</h1>
-          <p className="text-muted-foreground text-sm mt-1 capitalize">{formatMonth(currentMonth)}</p>
-        </div>
-        <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
-          <span className="text-primary font-serif font-semibold">YS</span>
+        <div className="flex items-center gap-3">
+          <img src={`${import.meta.env.BASE_URL}logo.avif`} alt="Beyond Asana" className="w-16 h-16 rounded-lg object-contain" />
+          <div>
+            <h1 className="text-2xl font-serif text-foreground">Beyond Asana</h1>
+            <p className="text-muted-foreground text-sm mt-1 capitalize">{formatMonth(currentMonth)}</p>
+          </div>
         </div>
       </header>
 
