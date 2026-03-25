@@ -15,7 +15,10 @@ function useDashboardData() {
     queryKey: ["dashboard"],
     queryFn: async () => {
       const base = import.meta.env.BASE_URL || "/";
-      const res = await fetch(`${base}api/summary/dashboard`);
+      const headers: Record<string, string> = {};
+      const token = localStorage.getItem("auth_token");
+      if (token) headers["Authorization"] = `Bearer ${token}`;
+      const res = await fetch(`${base}api/summary/dashboard`, { headers });
       if (!res.ok) throw new Error("Failed to fetch dashboard data");
       return res.json();
     },
