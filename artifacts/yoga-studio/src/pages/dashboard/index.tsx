@@ -122,7 +122,7 @@ export default function Dashboard() {
       <div className="space-y-6 pb-8">
 
         <section className="bg-white rounded-2xl p-4 shadow-sm border border-border/40">
-          <SectionHeader icon={TrendingUp} title="Composizione Ricavi" />
+          <SectionHeader icon={TrendingUp} title="Entrate" />
           <div className="h-52 -ml-2">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={monthlyData} margin={{ top: 5, right: 10, left: 0, bottom: 5 }}>
@@ -135,6 +135,18 @@ export default function Dashboard() {
                 <Bar dataKey="profitEur" name="Utile" stackId="revenue" fill="#7c8c6e" radius={[4, 4, 0, 0]} barSize={32} />
               </BarChart>
             </ResponsiveContainer>
+          </div>
+          <div className="flex justify-center gap-4 mt-2">
+            {[
+              { label: "Utile", color: "#7c8c6e" },
+              { label: "Insegnanti", color: "#dda15e" },
+              { label: "Costi Fissi", color: "#e57373" },
+            ].map((item) => (
+              <div key={item.label} className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: item.color }} />
+                <span>{item.label}</span>
+              </div>
+            ))}
           </div>
         </section>
 
