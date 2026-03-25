@@ -3,8 +3,9 @@ import { createHmac, timingSafeEqual } from "node:crypto";
 
 const router: IRouter = Router();
 
+const ENV_KEY = "APP_PASSWORD";
 function getPassword(): string | undefined {
-  return process.env["APP_PASSWORD"];
+  return process.env[ENV_KEY];
 }
 
 function makeToken(timestamp: string, secret: string): string {
