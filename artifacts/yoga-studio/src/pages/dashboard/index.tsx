@@ -217,20 +217,13 @@ export default function Dashboard() {
 
         {(data?.teacherStats || []).length > 0 && (
           <section className="bg-white rounded-2xl p-4 shadow-sm border border-border/40">
-            <SectionHeader icon={Users} title="Insegnanti — Redditività Stimata" />
-            <p className="text-xs text-muted-foreground mb-3">Ricavi attribuiti in base alla quota di costo sul totale. Stime indicative.</p>
+            <SectionHeader icon={Users} title="Insegnanti" />
             <div className="space-y-3">
               {data.teacherStats.map((t: any) => (
-                <div key={t.teacherId} className="flex items-center justify-between">
-                  <div>
-                    <div className="text-sm font-medium text-foreground">{t.teacherName}</div>
-                    <div className="text-xs text-muted-foreground">
-                      Costo: {formatCurrency(t.totalCost)}{Number(t.totalHours) > 0 ? ` · ${Number(t.totalHours).toFixed(0)} ore` : ""} · {t.monthsActive} {t.monthsActive === 1 ? "mese" : "mesi"}
-                    </div>
-                  </div>
-                  <div className="text-right">
-                    <div className="font-serif text-sm font-medium text-foreground">{formatCurrency(t.profit)}</div>
-                    <div className="text-xs text-muted-foreground">profitto stim.</div>
+                <div key={t.teacherId}>
+                  <div className="text-sm font-medium text-foreground">{t.teacherName}</div>
+                  <div className="text-xs text-muted-foreground">
+                    Costo: {formatCurrency(t.totalCost)}{Number(t.totalHours) > 0 ? ` · ${Number(t.totalHours).toFixed(0)} ore` : ""} · {t.monthsActive} {t.monthsActive === 1 ? "mese" : "mesi"}
                   </div>
                 </div>
               ))}
