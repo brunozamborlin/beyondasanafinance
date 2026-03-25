@@ -4,7 +4,7 @@ import { verifyToken } from "../routes/auth";
 const PUBLIC_PATHS = ["/auth/verify", "/auth/check"];
 
 export function authMiddleware(req: Request, res: Response, next: NextFunction): void {
-  if (!process.env.APP_PASSWORD) {
+  if (!process.env["APP_PASSWORD"]) {
     next();
     return;
   }

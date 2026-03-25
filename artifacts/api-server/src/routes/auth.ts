@@ -3,7 +3,9 @@ import { createHmac, timingSafeEqual } from "node:crypto";
 
 const router: IRouter = Router();
 
-const APP_PASSWORD = process.env.APP_PASSWORD;
+function getPassword(): string | undefined {
+  return process.env["APP_PASSWORD"];
+}
 
 function makeToken(timestamp: string, secret: string): string {
   const hmac = createHmac("sha256", secret).update(timestamp).digest("hex");
@@ -11,35 +13,39 @@ function makeToken(timestamp: string, secret: string): string {
 }
 
 export function verifyToken(token: string): boolean {
-  if (!APP_PASSWORD) return true; // No password set = no auth required
+  const secret = getPassword();
+  if (!secret) return true; // No password set = no auth required
   const dot = token.indexOf(".");
   if (dot === -1) return false;
   const timestamp = token.slice(0, dot);
-  const expected = makeToken(timestamp, APP_PASSWORD);
+  const expected = makeToken(timestamp, secret);
   if (token.length !== expected.length) return false;
   return timingSafeEqual(Buffer.from(token), Buffer.from(expected));
 }
 
 router.post("/auth/verify", (req, res): void => {
   const { password } = req.body ?? {};
+  const secret = getPassword();
 
-  if (!APP_PASSWORD) {
+  if (!secret) {
     res.json({ token: "no-auth-required" });
     return;
   }
 
-  if (typeof password !== "string" || password !== APP_PASSWORD) {
+  if (typeof password !== "string" || password !== secret) {
     res.status(401).json({ error: "Password errata" });
     return;
   }
 
   const timestamp = Date.now().toString();
-  const token = makeToken(timestamp, APP_PASSWORD);
+  const token = makeToken(timestamp, secret);
   res.json({ token });
 });
 
 router.get("/auth/check", (req, res): void => {
-  if (!APP_PASSWORD) {
+  const secret = getPassword();
+
+  if (!secret) {
     res.json({ valid: true });
     return;
   }
