@@ -68,6 +68,8 @@ export default function Dashboard() {
     label: shortMonth(m.month),
     revenueEur: m.revenue / 100,
     profitEur: m.netProfit / 100,
+    otherCostsEur: (m.otherCosts + m.estimatedTaxes) / 100,
+    teacherCostsEur: m.teacherCosts / 100,
   }));
 
   const productData = (data?.productStats || [])
@@ -120,27 +122,18 @@ export default function Dashboard() {
       <div className="space-y-6 pb-8">
 
         <section className="bg-white rounded-2xl p-4 shadow-sm border border-border/40">
-          <SectionHeader icon={TrendingUp} title="Incassi e Utile Mensili" />
+          <SectionHeader icon={TrendingUp} title="Composizione Ricavi" />
           <div className="h-52 -ml-2">
             <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={monthlyData} margin={{ top: 5, right: 10, left: 0, bottom: 5 }}>
-                <defs>
-                  <linearGradient id="colorRevenue" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#7c8c6e" stopOpacity={0.3} />
-                    <stop offset="95%" stopColor="#7c8c6e" stopOpacity={0} />
-                  </linearGradient>
-                  <linearGradient id="colorProfit" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#dda15e" stopOpacity={0.3} />
-                    <stop offset="95%" stopColor="#dda15e" stopOpacity={0} />
-                  </linearGradient>
-                </defs>
-                <CartesianGrid strokeDasharray="3 3" stroke="#e5e5e5" />
+              <BarChart data={monthlyData} margin={{ top: 5, right: 10, left: 0, bottom: 5 }}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#e5e5e5" vertical={false} />
                 <XAxis dataKey="label" tick={{ fontSize: 11 }} />
                 <YAxis tick={{ fontSize: 10 }} tickFormatter={(v) => `${(v/1000).toFixed(0)}k`} width={35} />
                 <Tooltip formatter={(v: number) => `€ ${v.toFixed(2)}`} labelFormatter={(l) => l} />
-                <Area type="monotone" dataKey="revenueEur" name="Incassi" stroke="#7c8c6e" fillOpacity={1} fill="url(#colorRevenue)" strokeWidth={2} />
-                <Area type="monotone" dataKey="profitEur" name="Utile" stroke="#dda15e" fillOpacity={1} fill="url(#colorProfit)" strokeWidth={2} />
-              </AreaChart>
+                <Bar dataKey="otherCostsEur" name="Costi Fissi" stackId="revenue" fill="#e57373" radius={[0, 0, 0, 0]} />
+                <Bar dataKey="teacherCostsEur" name="Insegnanti" stackId="revenue" fill="#dda15e" radius={[0, 0, 0, 0]} />
+                <Bar dataKey="profitEur" name="Utile" stackId="revenue" fill="#7c8c6e" radius={[4, 4, 0, 0]} barSize={32} />
+              </BarChart>
             </ResponsiveContainer>
           </div>
         </section>
