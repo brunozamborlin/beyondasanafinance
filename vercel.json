@@ -1,0 +1,16 @@
+{
+  "buildCommand": "pnpm run build",
+  "outputDirectory": "artifacts/yoga-studio/dist/public",
+  "installCommand": "pnpm install --frozen-lockfile",
+  "framework": null,
+  "rewrites": [
+    { "source": "/api/(.*)", "destination": "/api" },
+    { "source": "/((?!api/).*)", "destination": "/index.html" }
+  ],
+  "functions": {
+    "api/index.ts": {
+      "memory": 256,
+      "maxDuration": 10
+    }
+  }
+}
