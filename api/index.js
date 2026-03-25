@@ -1,4 +1,3 @@
 // Vercel serverless function adapter
-// Uses .js to avoid Vercel's TypeScript recompilation which conflicts
-// with the project's bundler-mode moduleResolution
-export { default } from "../artifacts/api-server/src/app.ts";
+// Imports the pre-built Express app bundle (built by esbuild during build step)
+export { default } from "../artifacts/api-server/dist/app.mjs";
