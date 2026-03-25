@@ -113,11 +113,15 @@ router.get("/summary/dashboard", async (_req, res): Promise<void> => {
 
   const totalRevenueAll = monthlyData.reduce((sum: number, m: any) => sum + m.revenue, 0);
   const totalTeacherCostsAll = monthlyData.reduce((sum: number, m: any) => sum + m.teacherCosts, 0);
+  const totalOtherCostsAll = monthlyData.reduce((sum: number, m: any) => sum + m.otherCosts, 0);
+  const totalTaxesAll = monthlyData.reduce((sum: number, m: any) => sum + m.estimatedTaxes, 0);
+  const totalNetProfitAll = totalRevenueAll - totalTeacherCostsAll - totalOtherCostsAll - totalTaxesAll;
 
   const teacherProfitability = teacherStats.map((t: any) => {
     const costShare = totalTeacherCostsAll > 0 ? t.totalCost / totalTeacherCostsAll : 0;
     const attributedRevenue = Math.round(totalRevenueAll * costShare);
-    const profit = attributedRevenue - t.totalCost;
+    // Estimated profit = teacher's proportional share of net profit
+    const profit = Math.round(totalNetProfitAll * costShare);
     return {
       ...t,
       attributedRevenue,

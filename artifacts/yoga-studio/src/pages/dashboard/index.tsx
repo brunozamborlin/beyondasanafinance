@@ -222,7 +222,7 @@ export default function Dashboard() {
                   <div>
                     <div className="text-sm font-medium text-foreground">{t.teacherName}</div>
                     <div className="text-xs text-muted-foreground">
-                      Costo: {formatCurrency(t.totalCost)} · {Number(t.totalHours).toFixed(0)} ore · {t.monthsActive} {t.monthsActive === 1 ? "mese" : "mesi"}
+                      Costo: {formatCurrency(t.totalCost)}{Number(t.totalHours) > 0 ? ` · ${Number(t.totalHours).toFixed(0)} ore` : ""} · {t.monthsActive} {t.monthsActive === 1 ? "mese" : "mesi"}
                     </div>
                   </div>
                   <div className="text-right">
