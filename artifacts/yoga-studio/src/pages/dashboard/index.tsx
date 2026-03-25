@@ -67,11 +67,14 @@ export default function Dashboard() {
     profitEur: m.netProfit / 100,
   }));
 
-  const productData = (data?.productStats || []).slice(0, 6).map((p: any) => ({
-    name: p.productName,
-    value: p.count,
-    revenue: p.totalRevenue,
-  }));
+  const productData = (data?.productStats || [])
+    .map((p: any) => ({
+      name: p.productName,
+      value: p.totalRevenue / 100,
+      count: p.count,
+    }))
+    .sort((a: any, b: any) => b.value - a.value)
+    .slice(0, 6);
 
   const methodData = (data?.paymentMethodStats || []).map((m: any) => ({
     name: METHOD_LABELS[m.method] || m.method,
@@ -140,15 +143,15 @@ export default function Dashboard() {
         </section>
 
         <section className="bg-white rounded-2xl p-4 shadow-sm border border-border/40">
-          <SectionHeader icon={ShoppingBag} title="Prodotti Più Venduti" />
+          <SectionHeader icon={ShoppingBag} title="Prodotti Più Redditizi" />
           <div className="h-48 -ml-2">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={productData} layout="vertical" margin={{ top: 5, right: 10, left: 0, bottom: 5 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#e5e5e5" horizontal={false} />
-                <XAxis type="number" tick={{ fontSize: 10 }} />
+                <XAxis type="number" tick={{ fontSize: 10 }} tickFormatter={(v) => `€${v >= 1000 ? `${(v/1000).toFixed(0)}k` : v}`} />
                 <YAxis dataKey="name" type="category" tick={{ fontSize: 10 }} width={75} />
-                <Tooltip formatter={(v: number, name: string) => name === "value" ? `${v} vendite` : formatCurrency(v)} />
-                <Bar dataKey="value" name="Vendite" fill="#7c8c6e" radius={[0, 4, 4, 0]} barSize={16} />
+                <Tooltip formatter={(v: number) => `€ ${v.toFixed(2)}`} />
+                <Bar dataKey="value" name="Ricavi" fill="#7c8c6e" radius={[0, 4, 4, 0]} barSize={16} />
               </BarChart>
             </ResponsiveContainer>
           </div>
