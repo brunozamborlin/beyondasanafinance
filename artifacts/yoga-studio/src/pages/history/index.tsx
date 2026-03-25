@@ -1,17 +1,28 @@
 import { PageTransition } from "@/components/PageTransition";
 import { useGetMonthlyHistory } from "@workspace/api-client-react";
 import { formatCurrency, formatMonth } from "@/lib/utils";
-import { Calendar, ChevronRight } from "lucide-react";
+import { Calendar, ChevronRight, Download } from "lucide-react";
 import { useLocation } from "wouter";
 
 export default function History() {
   const { data: history, isLoading } = useGetMonthlyHistory();
   const [, navigate] = useLocation();
 
+  const handleExport = () => {
+    const token = localStorage.getItem("auth_token");
+    const base = import.meta.env.BASE_URL || "/";
+    const url = `${base}api/payments/export${token ? `?token=${encodeURIComponent(token)}` : ""}`;
+    window.open(url, "_blank");
+  };
+
   return (
     <PageTransition className="min-h-screen bg-background">
-      <header className="px-6 pt-6 pb-4">
+      <header className="px-6 pt-6 pb-4 flex items-center justify-between">
         <h1 className="text-2xl font-serif text-foreground">Storico</h1>
+        <button onClick={handleExport} className="flex items-center gap-1.5 text-sm text-primary font-medium px-3 py-2 rounded-xl hover:bg-primary/5 transition-colors">
+          <Download className="w-4 h-4" />
+          CSV
+        </button>
       </header>
 
       <div className="p-6 space-y-4 pb-8">

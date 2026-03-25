@@ -16,7 +16,9 @@ export function authMiddleware(req: Request, res: Response, next: NextFunction):
   }
 
   const auth = req.headers.authorization;
-  const token = auth?.startsWith("Bearer ") ? auth.slice(7) : null;
+  // Support token via query param for direct browser navigations (e.g. CSV export)
+  const queryToken = typeof req.query.token === "string" ? req.query.token : null;
+  const token = auth?.startsWith("Bearer ") ? auth.slice(7) : queryToken;
 
   if (!token || !verifyToken(token)) {
     res.status(401).json({ error: "Non autorizzato" });

@@ -5,10 +5,28 @@ import { useListTeachers, useCreateTeacher } from "@workspace/api-client-react";
 import { ChevronLeft, UserPlus, ChevronRight, Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { formatCurrency } from "@/lib/utils";
+import { useQuery } from "@tanstack/react-query";
 
 export default function Teachers() {
   const { data: teachers, isLoading, refetch } = useListTeachers();
   const [showAdd, setShowAdd] = useState(false);
+
+  const { data: warnings } = useQuery({
+    queryKey: ["warnings-teacher-costs"],
+    queryFn: async () => {
+      const base = import.meta.env.BASE_URL || "/";
+      const headers: Record<string, string> = {};
+      const token = localStorage.getItem("auth_token");
+      if (token) headers["Authorization"] = `Bearer ${token}`;
+      const res = await fetch(`${base}api/warnings/missing-teacher-costs`, { headers });
+      if (!res.ok) return { months: [], teachers: [] };
+      return res.json();
+    },
+  });
+
+  const missingByTeacher = new Map<number, number>(
+    ((warnings?.teachers ?? []) as any[]).map((t: any) => [t.id, t.missingMonths.length])
+  );
 
   return (
     <PageTransition className="min-h-screen bg-background">
@@ -36,10 +54,15 @@ export default function Teachers() {
               <div className="bg-white rounded-2xl p-5 shadow-sm border border-border/40 hover:shadow-md transition-all flex items-center justify-between mb-3 cursor-pointer">
                 <div>
                   <h3 className="font-medium text-foreground text-lg mb-1">{teacher.name}</h3>
-                  <div className="text-sm text-muted-foreground">
-                    {teacher.compensationType === 'hourly' 
-                      ? `Orario (${formatCurrency(teacher.hourlyRate)}/h)` 
-                      : 'Compenso Manuale'}
+                  <div className="text-sm text-muted-foreground flex items-center gap-2">
+                    <span>{teacher.compensationType === 'hourly'
+                      ? `Orario (${formatCurrency(teacher.hourlyRate)}/h)`
+                      : 'Compenso Manuale'}</span>
+                    {(missingByTeacher.get(teacher.id) ?? 0) > 0 && (
+                      <span className="text-xs bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full font-medium">
+                        {missingByTeacher.get(teacher.id)} mesi mancanti
+                      </span>
+                    )}
                   </div>
                 </div>
                 <ChevronRight className="w-5 h-5 text-muted-foreground" />

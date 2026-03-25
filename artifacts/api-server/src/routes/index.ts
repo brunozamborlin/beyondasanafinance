@@ -7,6 +7,8 @@ import teachersRouter from "./teachers";
 import otherCostsRouter from "./otherCosts";
 import summaryRouter from "./summary";
 import settingsRouter from "./settings";
+import exportRouter from "./export";
+import warningsRouter from "./warnings";
 
 const router: IRouter = Router();
 
@@ -18,5 +20,7 @@ router.use(teachersRouter);
 router.use(otherCostsRouter);
 router.use(summaryRouter);
 router.use(settingsRouter);
+router.use(exportRouter);
+router.use(warningsRouter);
 
 export default router;

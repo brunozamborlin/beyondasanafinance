@@ -1,9 +1,11 @@
 import { PageTransition } from "@/components/PageTransition";
 import { formatCurrency, getCurrentMonthStr, formatMonth } from "@/lib/utils";
 import { useGetMonthlySummary, useGetMonthlyHistory } from "@workspace/api-client-react";
-import { ArrowUpRight, ArrowDownRight, TrendingUp, Receipt, Landmark } from "lucide-react";
+import { ArrowUpRight, ArrowDownRight, TrendingUp, Receipt, Landmark, AlertTriangle } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useMemo } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { Link } from "wouter";
 
 export default function Home() {
   const currentMonth = getCurrentMonthStr();
@@ -20,6 +22,21 @@ export default function Home() {
   const { data: summary, isLoading: loadingSummary } = useGetMonthlySummary(displayMonth);
   const isLoading = loadingHistory || loadingSummary;
 
+  const { data: warnings } = useQuery({
+    queryKey: ["warnings-teacher-costs"],
+    queryFn: async () => {
+      const base = import.meta.env.BASE_URL || "/";
+      const headers: Record<string, string> = {};
+      const token = localStorage.getItem("auth_token");
+      if (token) headers["Authorization"] = `Bearer ${token}`;
+      const res = await fetch(`${base}api/warnings/missing-teacher-costs`, { headers });
+      if (!res.ok) return { months: [], teachers: [] };
+      return res.json();
+    },
+  });
+
+  const missingMonths = (warnings?.months ?? []) as string[];
+
   return (
     <PageTransition className="p-6">
       <header className="mb-8 mt-4 flex items-center justify-between">
@@ -31,6 +48,16 @@ export default function Home() {
           </div>
         </div>
       </header>
+
+      {missingMonths.length > 0 && (
+        <Link href="/teachers" className="flex items-center gap-3 bg-amber-50 border border-amber-200 rounded-2xl p-4 mb-6">
+          <AlertTriangle className="w-5 h-5 text-amber-600 shrink-0" />
+          <div className="text-sm text-amber-800">
+            <span className="font-medium">Costi insegnanti mancanti</span>
+            <span className="text-amber-600"> per: {missingMonths.slice(0, 3).map(m => formatMonth(m)).join(", ")}</span>
+          </div>
+        </Link>
+      )}
 
       {isLoading ? (
         <div className="space-y-4 animate-pulse">
