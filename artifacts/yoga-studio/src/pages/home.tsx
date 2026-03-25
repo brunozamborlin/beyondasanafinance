@@ -1,12 +1,24 @@
 import { PageTransition } from "@/components/PageTransition";
 import { formatCurrency, getCurrentMonthStr, formatMonth } from "@/lib/utils";
-import { useGetMonthlySummary } from "@workspace/api-client-react";
+import { useGetMonthlySummary, useGetMonthlyHistory } from "@workspace/api-client-react";
 import { ArrowUpRight, ArrowDownRight, TrendingUp, Receipt, Landmark } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useMemo } from "react";
 
 export default function Home() {
   const currentMonth = getCurrentMonthStr();
-  const { data: summary, isLoading } = useGetMonthlySummary(currentMonth);
+  const { data: history, isLoading: loadingHistory } = useGetMonthlyHistory();
+
+  // Use current month if it has data, otherwise fall back to latest month with data
+  const displayMonth = useMemo(() => {
+    if (!history?.length) return currentMonth;
+    const hasCurrentMonth = history.some((m: any) => m.month === currentMonth && m.revenue > 0);
+    if (hasCurrentMonth) return currentMonth;
+    return history[0].month; // history is sorted DESC, first entry is latest
+  }, [history, currentMonth]);
+
+  const { data: summary, isLoading: loadingSummary } = useGetMonthlySummary(displayMonth);
+  const isLoading = loadingHistory || loadingSummary;
 
   return (
     <PageTransition className="p-6">
@@ -15,7 +27,7 @@ export default function Home() {
           <img src={`${import.meta.env.BASE_URL}logo.avif`} alt="Beyond Asana" className="w-16 h-16 rounded-lg object-contain" />
           <div>
             <h1 className="text-2xl font-serif text-foreground">Beyond Asana</h1>
-            <p className="text-muted-foreground text-sm mt-1 capitalize">{formatMonth(currentMonth)}</p>
+            <p className="text-muted-foreground text-sm mt-1 capitalize">{formatMonth(displayMonth)}</p>
           </div>
         </div>
       </header>
