@@ -8,8 +8,7 @@ import Home from "@/pages/home";
 import Dashboard from "@/pages/dashboard/index";
 import PaymentForm from "@/pages/payments/form";
 import Customers from "@/pages/customers/index";
-import Accounts from "@/pages/accounts/index";
-import More from "@/pages/more/index";
+import Manage from "@/pages/more/index";
 import History from "@/pages/history/index";
 import MonthDetail from "@/pages/history/[month]";
 import Teachers from "@/pages/teachers/index";
@@ -36,8 +35,7 @@ function Router() {
         <Route path="/dashboard" component={Dashboard} />
         <Route path="/payments/new" component={PaymentForm} />
         <Route path="/customers" component={Customers} />
-        <Route path="/accounts" component={Accounts} />
-        <Route path="/more" component={More} />
+        <Route path="/manage" component={Manage} />
         <Route path="/history" component={History} />
         <Route path="/history/:month" component={MonthDetail} />
         <Route path="/teachers" component={Teachers} />

@@ -1,5 +1,5 @@
 import { Link, useLocation } from "wouter";
-import { Home, BarChart3, PieChart, Menu } from "lucide-react";
+import { Home, CirclePlus, BarChart3, History, Settings } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export function MobileLayout({ children }: { children: React.ReactNode }) {
@@ -7,9 +7,10 @@ export function MobileLayout({ children }: { children: React.ReactNode }) {
 
   const navItems = [
     { href: "/", icon: Home, label: "Home" },
+    { href: "/payments/new", icon: CirclePlus, label: "Pagamento" },
     { href: "/dashboard", icon: BarChart3, label: "Dashboard" },
-    { href: "/accounts", icon: PieChart, label: "Conti" },
-    { href: "/more", icon: Menu, label: "Altro" },
+    { href: "/history", icon: History, label: "Storico" },
+    { href: "/manage", icon: Settings, label: "Gestione" },
   ];
 
   return (
@@ -25,13 +26,13 @@ export function MobileLayout({ children }: { children: React.ReactNode }) {
           {navItems.map((item) => {
             const Icon = item.icon;
             const isActive = location === item.href || (item.href !== "/" && location.startsWith(item.href));
-            
+
             return (
-              <Link 
-                key={item.href} 
+              <Link
+                key={item.href}
                 href={item.href}
                 className={cn(
-                  "flex flex-col items-center gap-1 min-w-[70px] px-2 py-1 rounded-xl transition-all duration-300",
+                  "flex flex-col items-center gap-1 min-w-[56px] px-1 py-1 rounded-xl transition-all duration-300",
                   isActive ? "text-primary" : "text-muted-foreground hover:text-foreground hover:bg-black/5"
                 )}
               >

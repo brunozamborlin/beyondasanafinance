@@ -1,7 +1,7 @@
 import { PageTransition } from "@/components/PageTransition";
 import { useGetMonthlyHistory } from "@workspace/api-client-react";
 import { formatCurrency, formatMonth } from "@/lib/utils";
-import { ChevronLeft, Calendar, ChevronRight } from "lucide-react";
+import { Calendar, ChevronRight } from "lucide-react";
 import { useLocation } from "wouter";
 
 export default function History() {
@@ -10,11 +10,8 @@ export default function History() {
 
   return (
     <PageTransition className="min-h-screen bg-background">
-      <header className="px-6 py-4 flex items-center gap-4 border-b border-border/50 bg-white/80 backdrop-blur-md sticky top-0 z-10">
-        <button onClick={() => navigate("/more")} className="p-2 -ml-2 rounded-full hover:bg-black/5 transition-colors">
-          <ChevronLeft className="w-6 h-6 text-foreground" />
-        </button>
-        <h1 className="text-xl font-serif font-medium">Storico</h1>
+      <header className="px-6 pt-6 pb-4">
+        <h1 className="text-2xl font-serif text-foreground">Storico</h1>
       </header>
 
       <div className="p-6 space-y-4 pb-8">

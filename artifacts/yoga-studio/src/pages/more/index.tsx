@@ -1,11 +1,10 @@
 import { PageTransition } from "@/components/PageTransition";
 import { Link } from "wouter";
-import { History, Users, UserRound, Settings, ChevronRight, Calculator } from "lucide-react";
+import { Users, UserRound, Settings, ChevronRight, Calculator } from "lucide-react";
 
-export default function More() {
+export default function Manage() {
   const menuItems = [
     { href: "/customers", icon: UserRound, label: "Clienti" },
-    { href: "/history", icon: History, label: "Storico Mesi" },
     { href: "/teachers", icon: Users, label: "Insegnanti" },
     { href: "/other-costs", icon: Calculator, label: "Altre Spese" },
     { href: "/settings", icon: Settings, label: "Impostazioni" },
@@ -14,13 +13,13 @@ export default function More() {
   return (
     <PageTransition className="p-6">
       <header className="mb-8 mt-2">
-        <h1 className="text-2xl font-serif text-foreground">Altro</h1>
+        <h1 className="text-2xl font-serif text-foreground">Gestione</h1>
       </header>
 
       <div className="bg-white rounded-3xl shadow-sm border border-border/40 overflow-hidden">
-        {menuItems.map((item, index) => (
-          <Link 
-            key={item.href} 
+        {menuItems.map((item) => (
+          <Link
+            key={item.href}
             href={item.href}
             className="flex items-center justify-between p-5 border-b border-border/50 last:border-0 hover:bg-black/5 transition-colors active:bg-black/10"
           >
