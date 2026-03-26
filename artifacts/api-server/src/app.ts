@@ -31,6 +31,14 @@ app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+// Cache GET responses for 60 seconds
+app.use("/api", (req, res, next) => {
+  if (req.method === "GET") {
+    res.setHeader("Cache-Control", "public, max-age=60, s-maxage=60");
+  }
+  next();
+});
+
 app.use("/api", authRouter);
 app.use("/api", authMiddleware, router);
 

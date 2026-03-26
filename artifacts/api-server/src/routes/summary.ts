@@ -9,138 +9,147 @@ import {
 
 const router: IRouter = Router();
 
-async function computeSummary(month: string) {
-  const revenueResult = await db
-    .select({ total: sql<number>`COALESCE(SUM(${paymentsTable.amount}), 0)` })
+// Batch-compute summaries for all months in a single set of queries
+async function computeAllSummaries() {
+  // 1. Revenue per month
+  const revenueByMonth = await db
+    .select({
+      month: sql<string>`to_char(${paymentsTable.date}::date, 'YYYY-MM')`,
+      total: sql<number>`COALESCE(SUM(${paymentsTable.amount}), 0)`,
+    })
     .from(paymentsTable)
-    .where(sql`to_char(${paymentsTable.date}::date, 'YYYY-MM') = ${month}`);
-
-  const revenue = Number(revenueResult[0]?.total ?? 0);
-
-  const teachers = await db
-    .select()
-    .from(teachersTable)
-    .where(eq(teachersTable.active, true));
-
-  const hoursRecords = await db
-    .select()
-    .from(teacherMonthlyHoursTable)
-    .where(eq(teacherMonthlyHoursTable.month, month));
-
-  const hoursMap = new Map(hoursRecords.map((h) => [h.teacherId, h]));
-
-  let teacherCosts = 0;
-  for (const teacher of teachers) {
-    const hourRecord = hoursMap.get(teacher.id);
-    if (!hourRecord) continue;
-    if (teacher.compensationType === "manual") {
-      teacherCosts += hourRecord.manualCost ?? 0;
-    } else {
-      teacherCosts += Math.round(Number(hourRecord.hoursWorked) * (teacher.hourlyRate ?? 0));
-    }
-  }
-
-  const otherCostsResult = await db
-    .select({ total: sql<number>`COALESCE(SUM(${otherCostsTable.amount}), 0)` })
-    .from(otherCostsTable)
-    .where(eq(otherCostsTable.month, month));
-
-  const otherCosts = Number(otherCostsResult[0]?.total ?? 0);
-
-  const [taxSettings] = await db.select().from(taxSettingsTable).limit(1);
-  const taxRate = taxSettings ? Number(taxSettings.taxRate) : 0;
-  const taxableIncome = revenue - teacherCosts - otherCosts;
-  const estimatedTaxes = taxableIncome > 0 ? Math.round(taxableIncome * taxRate / 100) : 0;
-
-  const netProfit = revenue - teacherCosts - otherCosts - estimatedTaxes;
-
-  return {
-    month,
-    revenue,
-    teacherCosts,
-    otherCosts,
-    estimatedTaxes,
-    netProfit,
-  };
-}
-
-router.get("/summary/dashboard", async (_req, res): Promise<void> => {
-  const monthsResult = await db
-    .select({ month: sql<string>`DISTINCT to_char(${paymentsTable.date}::date, 'YYYY-MM')` })
-    .from(paymentsTable)
+    .groupBy(sql`to_char(${paymentsTable.date}::date, 'YYYY-MM')`)
     .orderBy(sql`to_char(${paymentsTable.date}::date, 'YYYY-MM') ASC`);
 
-  const monthlyData = [];
-  for (const row of monthsResult) {
-    const summary = await computeSummary(row.month);
-    monthlyData.push(summary);
-  }
+  if (revenueByMonth.length === 0) return [];
 
-  const productStats = await db
+  // 2. Teacher costs per month (single query)
+  const teacherCostsByMonth = await db
     .select({
-      productId: paymentsTable.productId,
-      productName: productsTable.name,
-      count: sql<number>`COUNT(*)::int`,
-      totalRevenue: sql<number>`COALESCE(SUM(${paymentsTable.amount}), 0)::int`,
-    })
-    .from(paymentsTable)
-    .innerJoin(productsTable, eq(paymentsTable.productId, productsTable.id))
-    .groupBy(paymentsTable.productId, productsTable.name)
-    .orderBy(sql`COUNT(*) DESC`);
-
-  const paymentMethodStats = await db
-    .select({
-      method: paymentsTable.paymentMethod,
-      count: sql<number>`COUNT(*)::int`,
-      totalAmount: sql<number>`COALESCE(SUM(${paymentsTable.amount}), 0)::int`,
-    })
-    .from(paymentsTable)
-    .groupBy(paymentsTable.paymentMethod)
-    .orderBy(sql`COUNT(*) DESC`);
-
-  const teacherStats = await db
-    .select({
-      teacherId: teacherMonthlyHoursTable.teacherId,
-      teacherName: teachersTable.name,
-      totalHours: sql<number>`COALESCE(SUM(${teacherMonthlyHoursTable.hoursWorked}), 0)`,
-      totalCost: sql<number>`COALESCE(SUM(CASE WHEN ${teachersTable.compensationType} = 'manual' THEN ${teacherMonthlyHoursTable.manualCost} ELSE ${teacherMonthlyHoursTable.hoursWorked} * ${teachersTable.hourlyRate} END), 0)::int`,
-      monthsActive: sql<number>`COUNT(DISTINCT ${teacherMonthlyHoursTable.month})::int`,
+      month: teacherMonthlyHoursTable.month,
+      totalCost: sql<number>`COALESCE(SUM(CASE WHEN ${teachersTable.compensationType} = 'manual' THEN ${teacherMonthlyHoursTable.manualCost} ELSE ROUND(${teacherMonthlyHoursTable.hoursWorked} * ${teachersTable.hourlyRate}) END), 0)`,
     })
     .from(teacherMonthlyHoursTable)
     .innerJoin(teachersTable, eq(teacherMonthlyHoursTable.teacherId, teachersTable.id))
-    .groupBy(teacherMonthlyHoursTable.teacherId, teachersTable.name)
-    .orderBy(sql`SUM(CASE WHEN ${teachersTable.compensationType} = 'manual' THEN ${teacherMonthlyHoursTable.manualCost} ELSE ${teacherMonthlyHoursTable.hoursWorked} * ${teachersTable.hourlyRate} END) DESC`);
+    .where(eq(teachersTable.active, true))
+    .groupBy(teacherMonthlyHoursTable.month);
 
-  const totalRevenueAll = monthlyData.reduce((sum: number, m: any) => sum + m.revenue, 0);
-  const totalTeacherCostsAll = monthlyData.reduce((sum: number, m: any) => sum + m.teacherCosts, 0);
-  const totalOtherCostsAll = monthlyData.reduce((sum: number, m: any) => sum + m.otherCosts, 0);
-  const totalTaxesAll = monthlyData.reduce((sum: number, m: any) => sum + m.estimatedTaxes, 0);
+  // 3. Other costs per month (single query)
+  const otherCostsByMonth = await db
+    .select({
+      month: otherCostsTable.month,
+      total: sql<number>`COALESCE(SUM(${otherCostsTable.amount}), 0)`,
+    })
+    .from(otherCostsTable)
+    .groupBy(otherCostsTable.month);
+
+  // 4. Tax settings (single query)
+  const [taxSettings] = await db.select().from(taxSettingsTable).limit(1);
+  const taxRate = taxSettings ? Number(taxSettings.taxRate) : 0;
+
+  // Build lookup maps
+  const teacherCostsMap = new Map(teacherCostsByMonth.map((r) => [r.month, Number(r.totalCost)]));
+  const otherCostsMap = new Map(otherCostsByMonth.map((r) => [r.month, Number(r.total)]));
+
+  return revenueByMonth.map((r) => {
+    const revenue = Number(r.total);
+    const teacherCosts = teacherCostsMap.get(r.month) ?? 0;
+    const otherCosts = otherCostsMap.get(r.month) ?? 0;
+    const taxableIncome = revenue - teacherCosts - otherCosts;
+    const estimatedTaxes = taxableIncome > 0 ? Math.round(taxableIncome * taxRate / 100) : 0;
+    const netProfit = revenue - teacherCosts - otherCosts - estimatedTaxes;
+
+    return { month: r.month, revenue, teacherCosts, otherCosts, estimatedTaxes, netProfit };
+  });
+}
+
+// Single-month summary (still used by /summary/:month)
+async function computeSummary(month: string) {
+  const [revenueResult, teacherCostsResult, otherCostsResult, [taxSettings]] = await Promise.all([
+    db.select({ total: sql<number>`COALESCE(SUM(${paymentsTable.amount}), 0)` })
+      .from(paymentsTable)
+      .where(sql`to_char(${paymentsTable.date}::date, 'YYYY-MM') = ${month}`),
+    db.select({
+        totalCost: sql<number>`COALESCE(SUM(CASE WHEN ${teachersTable.compensationType} = 'manual' THEN ${teacherMonthlyHoursTable.manualCost} ELSE ROUND(${teacherMonthlyHoursTable.hoursWorked} * ${teachersTable.hourlyRate}) END), 0)`,
+      })
+      .from(teacherMonthlyHoursTable)
+      .innerJoin(teachersTable, eq(teacherMonthlyHoursTable.teacherId, teachersTable.id))
+      .where(eq(teacherMonthlyHoursTable.month, month)),
+    db.select({ total: sql<number>`COALESCE(SUM(${otherCostsTable.amount}), 0)` })
+      .from(otherCostsTable)
+      .where(eq(otherCostsTable.month, month)),
+    db.select().from(taxSettingsTable).limit(1),
+  ]);
+
+  const revenue = Number(revenueResult[0]?.total ?? 0);
+  const teacherCosts = Number(teacherCostsResult[0]?.totalCost ?? 0);
+  const otherCosts = Number(otherCostsResult[0]?.total ?? 0);
+  const taxRate = taxSettings ? Number(taxSettings.taxRate) : 0;
+  const taxableIncome = revenue - teacherCosts - otherCosts;
+  const estimatedTaxes = taxableIncome > 0 ? Math.round(taxableIncome * taxRate / 100) : 0;
+  const netProfit = revenue - teacherCosts - otherCosts - estimatedTaxes;
+
+  return { month, revenue, teacherCosts, otherCosts, estimatedTaxes, netProfit };
+}
+
+router.get("/summary/dashboard", async (_req, res): Promise<void> => {
+  // Run all queries in parallel
+  const [monthlyData, productStats, paymentMethodStats, teacherStats, topCustomers] = await Promise.all([
+    computeAllSummaries(),
+    db.select({
+        productId: paymentsTable.productId,
+        productName: productsTable.name,
+        count: sql<number>`COUNT(*)::int`,
+        totalRevenue: sql<number>`COALESCE(SUM(${paymentsTable.amount}), 0)::int`,
+      })
+      .from(paymentsTable)
+      .innerJoin(productsTable, eq(paymentsTable.productId, productsTable.id))
+      .groupBy(paymentsTable.productId, productsTable.name)
+      .orderBy(sql`COUNT(*) DESC`),
+    db.select({
+        method: paymentsTable.paymentMethod,
+        count: sql<number>`COUNT(*)::int`,
+        totalAmount: sql<number>`COALESCE(SUM(${paymentsTable.amount}), 0)::int`,
+      })
+      .from(paymentsTable)
+      .groupBy(paymentsTable.paymentMethod)
+      .orderBy(sql`COUNT(*) DESC`),
+    db.select({
+        teacherId: teacherMonthlyHoursTable.teacherId,
+        teacherName: teachersTable.name,
+        totalHours: sql<number>`COALESCE(SUM(${teacherMonthlyHoursTable.hoursWorked}), 0)`,
+        totalCost: sql<number>`COALESCE(SUM(CASE WHEN ${teachersTable.compensationType} = 'manual' THEN ${teacherMonthlyHoursTable.manualCost} ELSE ${teacherMonthlyHoursTable.hoursWorked} * ${teachersTable.hourlyRate} END), 0)::int`,
+        monthsActive: sql<number>`COUNT(DISTINCT ${teacherMonthlyHoursTable.month})::int`,
+      })
+      .from(teacherMonthlyHoursTable)
+      .innerJoin(teachersTable, eq(teacherMonthlyHoursTable.teacherId, teachersTable.id))
+      .groupBy(teacherMonthlyHoursTable.teacherId, teachersTable.name)
+      .orderBy(sql`SUM(CASE WHEN ${teachersTable.compensationType} = 'manual' THEN ${teacherMonthlyHoursTable.manualCost} ELSE ${teacherMonthlyHoursTable.hoursWorked} * ${teachersTable.hourlyRate} END) DESC`),
+    db.select({
+        customerId: paymentsTable.customerId,
+        customerName: customersTable.fullName,
+        count: sql<number>`COUNT(*)::int`,
+        totalSpent: sql<number>`COALESCE(SUM(${paymentsTable.amount}), 0)::int`,
+      })
+      .from(paymentsTable)
+      .innerJoin(customersTable, eq(paymentsTable.customerId, customersTable.id))
+      .groupBy(paymentsTable.customerId, customersTable.fullName)
+      .orderBy(sql`SUM(${paymentsTable.amount}) DESC`)
+      .limit(10),
+  ]);
+
+  const totalRevenueAll = monthlyData.reduce((sum, m) => sum + m.revenue, 0);
+  const totalTeacherCostsAll = monthlyData.reduce((sum, m) => sum + m.teacherCosts, 0);
+  const totalOtherCostsAll = monthlyData.reduce((sum, m) => sum + m.otherCosts, 0);
+  const totalTaxesAll = monthlyData.reduce((sum, m) => sum + m.estimatedTaxes, 0);
   const totalNetProfitAll = totalRevenueAll - totalTeacherCostsAll - totalOtherCostsAll - totalTaxesAll;
 
   const teacherProfitability = teacherStats.map((t: any) => {
     const costShare = totalTeacherCostsAll > 0 ? t.totalCost / totalTeacherCostsAll : 0;
     const attributedRevenue = Math.round(totalRevenueAll * costShare);
-    // Estimated profit = teacher's proportional share of net profit
     const profit = Math.round(totalNetProfitAll * costShare);
-    return {
-      ...t,
-      attributedRevenue,
-      profit,
-    };
+    return { ...t, attributedRevenue, profit };
   }).sort((a: any, b: any) => b.profit - a.profit);
-
-  const topCustomers = await db
-    .select({
-      customerId: paymentsTable.customerId,
-      customerName: customersTable.fullName,
-      count: sql<number>`COUNT(*)::int`,
-      totalSpent: sql<number>`COALESCE(SUM(${paymentsTable.amount}), 0)::int`,
-    })
-    .from(paymentsTable)
-    .innerJoin(customersTable, eq(paymentsTable.customerId, customersTable.id))
-    .groupBy(paymentsTable.customerId, customersTable.fullName)
-    .orderBy(sql`SUM(${paymentsTable.amount}) DESC`)
-    .limit(10);
 
   res.json({
     monthlyData,
@@ -152,17 +161,8 @@ router.get("/summary/dashboard", async (_req, res): Promise<void> => {
 });
 
 router.get("/summary/history", async (_req, res): Promise<void> => {
-  const monthsResult = await db
-    .select({ month: sql<string>`DISTINCT to_char(${paymentsTable.date}::date, 'YYYY-MM')` })
-    .from(paymentsTable)
-    .orderBy(sql`to_char(${paymentsTable.date}::date, 'YYYY-MM') DESC`);
-
-  const summaries = [];
-  for (const row of monthsResult) {
-    const summary = await computeSummary(row.month);
-    summaries.push(summary);
-  }
-
+  const summaries = await computeAllSummaries();
+  summaries.reverse(); // DESC order for history
   res.json(GetMonthlyHistoryResponse.parse(summaries));
 });
 

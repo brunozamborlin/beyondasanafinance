@@ -9,18 +9,20 @@ import { Link } from "wouter";
 
 export default function Home() {
   const currentMonth = getCurrentMonthStr();
+
+  // Fetch current month summary and history in parallel
+  const { data: currentSummary, isLoading: loadingCurrent } = useGetMonthlySummary(currentMonth);
   const { data: history, isLoading: loadingHistory } = useGetMonthlyHistory();
 
-  // Use current month if it has data, otherwise fall back to latest month with data
-  const displayMonth = useMemo(() => {
-    if (!history?.length) return currentMonth;
-    const hasCurrentMonth = history.some((m: any) => m.month === currentMonth && m.revenue > 0);
-    if (hasCurrentMonth) return currentMonth;
-    return history[0].month; // history is sorted DESC, first entry is latest
-  }, [history, currentMonth]);
+  // If current month has data, use it. Otherwise fall back to latest month from history.
+  const currentIsEmpty = !loadingCurrent && (currentSummary?.revenue ?? 0) === 0;
+  const latestMonth = currentIsEmpty && history?.length ? history[0].month : null;
 
-  const { data: summary, isLoading: loadingSummary } = useGetMonthlySummary(displayMonth);
-  const isLoading = loadingHistory || loadingSummary;
+  // Derive the summary to display — either current month or latest from history
+  const displayMonth = currentIsEmpty && latestMonth ? latestMonth : currentMonth;
+  const historySummary = latestMonth ? history?.find((m: any) => m.month === latestMonth) : null;
+  const summary = currentIsEmpty && historySummary ? historySummary : currentSummary;
+  const isLoading = loadingCurrent && loadingHistory;
 
   const { data: warnings } = useQuery({
     queryKey: ["warnings-teacher-costs"],
