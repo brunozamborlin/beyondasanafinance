@@ -48,3 +48,10 @@ Thumbs.db
 .cache/
 .local/
 .vercel
+
+# Build caches
+.next/
+
+# Development artifacts
+backup/
+screenshots/

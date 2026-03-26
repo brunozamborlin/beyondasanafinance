@@ -2,14 +2,12 @@ import { useState } from "react";
 import { Link } from "wouter";
 import { PageTransition } from "@/components/PageTransition";
 import { useListTeachers, useCreateTeacher } from "@workspace/api-client-react";
-import { ChevronLeft, UserPlus, ChevronRight, Loader2 } from "lucide-react";
+import { UserPlus, ChevronRight, Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { formatCurrency } from "@/lib/utils";
 import { useQuery } from "@tanstack/react-query";
-import { useLocation } from "wouter";
 
 export default function Teachers() {
-  const [, navigate] = useLocation();
   const { data: teachers, isLoading, refetch } = useListTeachers();
   const [showAdd, setShowAdd] = useState(false);
 
@@ -33,12 +31,7 @@ export default function Teachers() {
   return (
     <PageTransition className="min-h-screen bg-background">
       <header className="px-6 py-4 flex items-center justify-between border-b border-border/50 bg-white/80 backdrop-blur-md sticky top-0 z-10">
-        <div className="flex items-center gap-4">
-          <button onClick={() => navigate("/manage")} className="p-2 -ml-2 rounded-full hover:bg-black/5 transition-colors">
-            <ChevronLeft className="w-6 h-6 text-foreground" />
-          </button>
-          <h1 className="text-xl font-serif font-medium">Insegnanti</h1>
-        </div>
+        <h1 className="text-xl font-serif font-medium">Insegnanti</h1>
         <button 
           onClick={() => setShowAdd(true)}
           className="text-primary p-2 -mr-2 rounded-full hover:bg-black/5 transition-colors"

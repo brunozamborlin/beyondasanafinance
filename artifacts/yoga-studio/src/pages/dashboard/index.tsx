@@ -5,7 +5,8 @@ import {
   AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
   BarChart, Bar, PieChart, Pie, Cell, Legend,
 } from "recharts";
-import { BarChart3, TrendingUp, ShoppingBag, CreditCard, Users, Trophy } from "lucide-react";
+import { BarChart3, TrendingUp, ShoppingBag, CreditCard, Users, Trophy, Settings } from "lucide-react";
+import { useLocation } from "wouter";
 
 const COLORS = ["#7c8c6e", "#a3b18a", "#dda15e", "#bc6c25", "#606c38", "#283618", "#588157", "#dad7cd"];
 const METHOD_LABELS: Record<string, string> = { contanti: "Contanti", pos: "POS", bonifico: "Bonifico" };
@@ -48,6 +49,7 @@ function SectionHeader({ icon: Icon, title }: { icon: any; title: string }) {
 }
 
 export default function Dashboard() {
+  const [, navigate] = useLocation();
   const { data, isLoading } = useDashboardData();
 
   if (isLoading) {
@@ -96,25 +98,30 @@ export default function Dashboard() {
 
   return (
     <PageTransition className="p-6">
-      <header className="mb-6 mt-2">
-        <h1 className="text-2xl font-serif text-foreground">Dashboard</h1>
-        <p className="text-sm text-muted-foreground mt-1">
-          {monthlyData.length > 0
-            ? `${formatMonth(monthlyData[0].month)} — ${formatMonth(monthlyData[monthlyData.length - 1].month)}`
-            : "Nessun dato"}
-        </p>
+      <header className="mb-6 mt-2 flex items-start justify-between">
+        <div>
+          <h1 className="text-2xl font-serif text-foreground">Dashboard</h1>
+          <p className="text-sm text-muted-foreground mt-1">
+            {monthlyData.length > 0
+              ? `${formatMonth(monthlyData[0].month)} — ${formatMonth(monthlyData[monthlyData.length - 1].month)}`
+              : "Nessun dato"}
+          </p>
+        </div>
+        <button onClick={() => navigate("/settings")} className="p-2 -mr-2 rounded-full hover:bg-black/5 transition-colors">
+          <Settings className="w-5 h-5 text-muted-foreground" />
+        </button>
       </header>
 
       <div className="grid grid-cols-3 gap-3 mb-6">
-        <div className="bg-white rounded-2xl p-3 shadow-sm border border-border/40 text-center">
+        <div className="bg-white rounded-2xl p-3 shadow-sm border border-border/40 border-l-4 border-l-[#dda15e] text-left">
           <div className="text-xs text-muted-foreground mb-1">Incassi</div>
           <div className="text-sm font-serif font-medium">{formatCurrency(totalRevenue)}</div>
         </div>
-        <div className="bg-white rounded-2xl p-3 shadow-sm border border-border/40 text-center">
+        <div className="bg-white rounded-2xl p-3 shadow-sm border border-border/40 border-l-4 border-l-primary text-left">
           <div className="text-xs text-muted-foreground mb-1">Utile</div>
           <div className="text-sm font-serif font-medium">{formatCurrency(totalProfit)}</div>
         </div>
-        <div className="bg-white rounded-2xl p-3 shadow-sm border border-border/40 text-center">
+        <div className="bg-white rounded-2xl p-3 shadow-sm border border-border/40 border-l-4 border-l-[#90a4ae] text-left">
           <div className="text-xs text-muted-foreground mb-1">Pagamenti</div>
           <div className="text-sm font-serif font-medium">{totalPayments}</div>
         </div>

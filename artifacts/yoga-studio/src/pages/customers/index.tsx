@@ -1,10 +1,9 @@
 import { useState } from "react";
 import { PageTransition } from "@/components/PageTransition";
 import { useListCustomers, useCreateCustomer, useUpdateCustomer, useListCustomerStatuses } from "@workspace/api-client-react";
-import { Search, UserPlus, Phone, Loader2, Pencil, ChevronLeft } from "lucide-react";
+import { Search, UserPlus, Phone, Loader2, Pencil } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useQueryClient } from "@tanstack/react-query";
-import { useLocation } from "wouter";
 
 export default function Customers() {
   const [search, setSearch] = useState("");
@@ -12,7 +11,6 @@ export default function Customers() {
   const { data: statuses } = useListCustomerStatuses();
   const [showAdd, setShowAdd] = useState(false);
   const [editCustomer, setEditCustomer] = useState<any>(null);
-  const [, navigate] = useLocation();
 
   const statusMap = new Map(statuses?.map(s => [s.customerId, s]));
 
@@ -23,10 +21,7 @@ export default function Customers() {
 
   return (
     <PageTransition className="min-h-screen bg-background">
-      <header className="px-6 py-4 flex items-center gap-4 border-b border-border/50 bg-white/80 backdrop-blur-md sticky top-0 z-10">
-        <button onClick={() => navigate("/manage")} className="p-2 -ml-2 rounded-full hover:bg-black/5 transition-colors">
-          <ChevronLeft className="w-6 h-6 text-foreground" />
-        </button>
+      <header className="px-6 py-4 flex items-center justify-between border-b border-border/50 bg-white/80 backdrop-blur-md sticky top-0 z-10">
         <h1 className="text-xl font-serif font-medium">Clienti</h1>
       </header>
 
@@ -73,13 +68,13 @@ export default function Customers() {
                   const s = statusMap.get(customer.id);
                   if (!s || s.status === "none") return null;
                   if (s.status === "active" && s.lastProduct && s.expiresAt) {
-                    return <div className="text-xs text-emerald-600 font-medium mb-1">{s.lastProduct} · scade {formatDate(s.expiresAt)}</div>;
+                    return <div className="text-xs text-emerald-600 font-medium mb-1 flex items-center gap-1.5"><span className="inline-block w-1.5 h-1.5 rounded-full bg-emerald-500 shrink-0" />{s.lastProduct} · scade {formatDate(s.expiresAt)}</div>;
                   }
                   if (s.status === "expired" && s.lastProduct && s.expiresAt) {
-                    return <div className="text-xs text-red-500 font-medium mb-1">{s.lastProduct} · scaduto {formatDate(s.expiresAt)}</div>;
+                    return <div className="text-xs text-red-500 font-medium mb-1 flex items-center gap-1.5"><span className="inline-block w-1.5 h-1.5 rounded-full bg-red-500 shrink-0" />{s.lastProduct} · scaduto {formatDate(s.expiresAt)}</div>;
                   }
                   if (s.status === "classpack" && s.lastProduct && s.purchaseDate) {
-                    return <div className="text-xs text-muted-foreground font-medium mb-1">{s.lastProduct} · acquistato {formatDate(s.purchaseDate)}</div>;
+                    return <div className="text-xs text-muted-foreground font-medium mb-1 flex items-center gap-1.5"><span className="inline-block w-1.5 h-1.5 rounded-full bg-gray-400 shrink-0" />{s.lastProduct} · acquistato {formatDate(s.purchaseDate)}</div>;
                   }
                   return null;
                 })()}

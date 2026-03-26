@@ -5,11 +5,9 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { MobileLayout } from "@/components/MobileLayout";
 import { PasswordGate } from "@/components/PasswordGate";
 
-import Home from "@/pages/home";
 import Dashboard from "@/pages/dashboard/index";
 import PaymentForm from "@/pages/payments/form";
 import Customers from "@/pages/customers/index";
-import Manage from "@/pages/more/index";
 import History from "@/pages/history/index";
 import MonthDetail from "@/pages/history/[month]";
 import Teachers from "@/pages/teachers/index";
@@ -31,11 +29,9 @@ function Router() {
   return (
     <MobileLayout>
       <Switch>
-        <Route path="/" component={Home} />
-        <Route path="/dashboard" component={Dashboard} />
+        <Route path="/" component={Dashboard} />
         <Route path="/payments/new" component={PaymentForm} />
         <Route path="/customers" component={Customers} />
-        <Route path="/manage" component={Manage} />
         <Route path="/history" component={History} />
         <Route path="/history/:month" component={MonthDetail} />
         <Route path="/teachers" component={Teachers} />

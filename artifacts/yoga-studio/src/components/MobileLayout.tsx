@@ -1,16 +1,16 @@
 import { Link, useLocation } from "wouter";
-import { Home, CirclePlus, BarChart3, History, Settings } from "lucide-react";
+import { CirclePlus, BarChart3, History, UserRound, Users } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export function MobileLayout({ children }: { children: React.ReactNode }) {
   const [location] = useLocation();
 
   const navItems = [
-    { href: "/", icon: Home, label: "Home" },
+    { href: "/", icon: BarChart3, label: "Dashboard" },
     { href: "/payments/new", icon: CirclePlus, label: "Pagamento" },
-    { href: "/dashboard", icon: BarChart3, label: "Dashboard" },
     { href: "/history", icon: History, label: "Storico" },
-    { href: "/manage", icon: Settings, label: "Gestione" },
+    { href: "/customers", icon: UserRound, label: "Clienti" },
+    { href: "/teachers", icon: Users, label: "Insegnanti" },
   ];
 
   return (
@@ -40,6 +40,7 @@ export function MobileLayout({ children }: { children: React.ReactNode }) {
                 <span className={cn("text-[10px] font-medium transition-all duration-300", isActive && "font-semibold")}>
                   {item.label}
                 </span>
+                <div className={cn("w-1 h-1 rounded-full transition-all duration-300", isActive ? "bg-primary" : "bg-transparent")} />
               </Link>
             );
           })}
