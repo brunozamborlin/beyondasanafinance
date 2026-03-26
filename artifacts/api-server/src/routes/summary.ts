@@ -34,11 +34,12 @@ async function computeAllSummaries() {
     .where(eq(teachersTable.active, true))
     .groupBy(teacherMonthlyHoursTable.month);
 
-  // 3. Other costs per month (single query)
+  // 3. Other costs per month (excluding "tasse" category)
   const otherCostsByMonth = await db
     .select({
       month: otherCostsTable.month,
-      total: sql<number>`COALESCE(SUM(${otherCostsTable.amount}), 0)`,
+      total: sql<number>`COALESCE(SUM(CASE WHEN ${otherCostsTable.category} != 'tasse' THEN ${otherCostsTable.amount} ELSE 0 END), 0)`,
+      manualTaxes: sql<number>`COALESCE(SUM(CASE WHEN ${otherCostsTable.category} = 'tasse' THEN ${otherCostsTable.amount} ELSE 0 END), 0)`,
     })
     .from(otherCostsTable)
     .groupBy(otherCostsTable.month);
@@ -49,14 +50,17 @@ async function computeAllSummaries() {
 
   // Build lookup maps
   const teacherCostsMap = new Map(teacherCostsByMonth.map((r) => [r.month, Number(r.totalCost)]));
-  const otherCostsMap = new Map(otherCostsByMonth.map((r) => [r.month, Number(r.total)]));
+  const otherCostsMap = new Map(otherCostsByMonth.map((r) => [r.month, { otherCosts: Number(r.total), manualTaxes: Number(r.manualTaxes) }]));
 
   return revenueByMonth.map((r) => {
     const revenue = Number(r.total);
     const teacherCosts = teacherCostsMap.get(r.month) ?? 0;
-    const otherCosts = otherCostsMap.get(r.month) ?? 0;
+    const entry = otherCostsMap.get(r.month);
+    const otherCosts = entry?.otherCosts ?? 0;
+    const manualTaxes = entry?.manualTaxes ?? 0;
+    // Use manual taxes if set, otherwise auto-calculate
     const taxableIncome = revenue - teacherCosts - otherCosts;
-    const estimatedTaxes = taxableIncome > 0 ? Math.round(taxableIncome * taxRate / 100) : 0;
+    const estimatedTaxes = manualTaxes > 0 ? manualTaxes : (taxableIncome > 0 ? Math.round(taxableIncome * taxRate / 100) : 0);
     const netProfit = revenue - teacherCosts - otherCosts - estimatedTaxes;
 
     return { month: r.month, revenue, teacherCosts, otherCosts, estimatedTaxes, netProfit };
@@ -75,7 +79,10 @@ async function computeSummary(month: string) {
       .from(teacherMonthlyHoursTable)
       .innerJoin(teachersTable, eq(teacherMonthlyHoursTable.teacherId, teachersTable.id))
       .where(eq(teacherMonthlyHoursTable.month, month)),
-    db.select({ total: sql<number>`COALESCE(SUM(${otherCostsTable.amount}), 0)` })
+    db.select({
+        total: sql<number>`COALESCE(SUM(CASE WHEN ${otherCostsTable.category} != 'tasse' THEN ${otherCostsTable.amount} ELSE 0 END), 0)`,
+        manualTaxes: sql<number>`COALESCE(SUM(CASE WHEN ${otherCostsTable.category} = 'tasse' THEN ${otherCostsTable.amount} ELSE 0 END), 0)`,
+      })
       .from(otherCostsTable)
       .where(eq(otherCostsTable.month, month)),
     db.select().from(taxSettingsTable).limit(1),
@@ -84,9 +91,10 @@ async function computeSummary(month: string) {
   const revenue = Number(revenueResult[0]?.total ?? 0);
   const teacherCosts = Number(teacherCostsResult[0]?.totalCost ?? 0);
   const otherCosts = Number(otherCostsResult[0]?.total ?? 0);
+  const manualTaxes = Number(otherCostsResult[0]?.manualTaxes ?? 0);
   const taxRate = taxSettings ? Number(taxSettings.taxRate) : 0;
   const taxableIncome = revenue - teacherCosts - otherCosts;
-  const estimatedTaxes = taxableIncome > 0 ? Math.round(taxableIncome * taxRate / 100) : 0;
+  const estimatedTaxes = manualTaxes > 0 ? manualTaxes : (taxableIncome > 0 ? Math.round(taxableIncome * taxRate / 100) : 0);
   const netProfit = revenue - teacherCosts - otherCosts - estimatedTaxes;
 
   return { month, revenue, teacherCosts, otherCosts, estimatedTaxes, netProfit };

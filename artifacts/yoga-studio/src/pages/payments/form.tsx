@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useLocation } from "wouter";
+import { useQueryClient } from "@tanstack/react-query";
 import { PageTransition } from "@/components/PageTransition";
 import { 
   useListCustomers, 
@@ -10,7 +11,7 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { format } from "date-fns";
-import { ChevronLeft, Check, Loader2 } from "lucide-react";
+import { Check, Loader2 } from "lucide-react";
 import { cn, toCents } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
 
@@ -27,6 +28,7 @@ type PaymentFormValues = z.infer<typeof paymentSchema>;
 
 export default function PaymentForm() {
   const [, setLocation] = useLocation();
+  const queryClient = useQueryClient();
   const { toast } = useToast();
   const { data: customers } = useListCustomers();
   const { data: products } = useListProducts();
@@ -69,6 +71,7 @@ export default function PaymentForm() {
       }
     }, {
       onSuccess: () => {
+        queryClient.invalidateQueries();
         toast({ title: "Pagamento registrato con successo!" });
         setLocation("/");
       },
@@ -80,12 +83,8 @@ export default function PaymentForm() {
 
   return (
     <PageTransition className="min-h-screen bg-white">
-      <header className="px-6 py-4 flex items-center justify-between border-b border-border/50 sticky top-0 bg-white/80 backdrop-blur-md z-10">
-        <button onClick={() => window.history.back()} className="p-2 -ml-2 rounded-full hover:bg-black/5 transition-colors">
-          <ChevronLeft className="w-6 h-6 text-foreground" />
-        </button>
-        <h1 className="text-lg font-serif font-medium">Nuovo Pagamento</h1>
-        <div className="w-10"></div>
+      <header className="px-6 pt-6 pb-4">
+        <h1 className="text-2xl font-serif text-foreground">Nuovo Pagamento</h1>
       </header>
 
       <form onSubmit={form.handleSubmit(onSubmit)} className="p-6 space-y-6">

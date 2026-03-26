@@ -1,12 +1,11 @@
 import { PageTransition } from "@/components/PageTransition";
 import { Link } from "wouter";
-import { Users, UserRound, Settings, ChevronRight, Calculator } from "lucide-react";
+import { Users, UserRound, Settings, ChevronRight } from "lucide-react";
 
 export default function Manage() {
   const menuItems = [
     { href: "/customers", icon: UserRound, label: "Clienti" },
     { href: "/teachers", icon: Users, label: "Insegnanti" },
-    { href: "/other-costs", icon: Calculator, label: "Altre Spese" },
     { href: "/settings", icon: Settings, label: "Impostazioni" },
   ];
 

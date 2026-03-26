@@ -1,33 +1,50 @@
 import { useState } from "react";
 import { PageTransition } from "@/components/PageTransition";
-import { useListCustomers, useCreateCustomer, useUpdateCustomer } from "@workspace/api-client-react";
-import { Search, UserPlus, Phone, Loader2, Pencil } from "lucide-react";
+import { useListCustomers, useCreateCustomer, useUpdateCustomer, useListCustomerStatuses } from "@workspace/api-client-react";
+import { Search, UserPlus, Phone, Loader2, Pencil, ChevronLeft } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useQueryClient } from "@tanstack/react-query";
+import { useLocation } from "wouter";
 
 export default function Customers() {
   const [search, setSearch] = useState("");
   const { data: customers, isLoading, refetch } = useListCustomers({ search: search || undefined });
+  const { data: statuses } = useListCustomerStatuses();
   const [showAdd, setShowAdd] = useState(false);
   const [editCustomer, setEditCustomer] = useState<any>(null);
+  const [, navigate] = useLocation();
+
+  const statusMap = new Map(statuses?.map(s => [s.customerId, s]));
+
+  const formatDate = (dateStr: string) => {
+    const d = new Date(dateStr);
+    return d.toLocaleDateString("it-IT", { day: "numeric", month: "short", year: "numeric" });
+  };
 
   return (
-    <PageTransition className="p-6">
-      <header className="mb-6 mt-2">
-        <h1 className="text-2xl font-serif text-foreground mb-4">Clienti</h1>
-        <div className="relative">
-          <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
-          <input
-            type="text"
-            placeholder="Cerca cliente..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="w-full bg-white border border-border/50 rounded-2xl pl-12 pr-4 py-3.5 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-foreground shadow-sm"
-          />
-        </div>
+    <PageTransition className="min-h-screen bg-background">
+      <header className="px-6 py-4 flex items-center gap-4 border-b border-border/50 bg-white/80 backdrop-blur-md sticky top-0 z-10">
+        <button onClick={() => navigate("/manage")} className="p-2 -ml-2 rounded-full hover:bg-black/5 transition-colors">
+          <ChevronLeft className="w-6 h-6 text-foreground" />
+        </button>
+        <h1 className="text-xl font-serif font-medium">Clienti</h1>
       </header>
 
-      <div className="flex items-center justify-between mb-4">
+      <div className="p-6">
+        <div className="mb-4">
+          <div className="relative">
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
+            <input
+              type="text"
+              placeholder="Cerca cliente..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="w-full bg-white border border-border/50 rounded-2xl pl-12 pr-4 py-3.5 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-foreground shadow-sm"
+            />
+          </div>
+        </div>
+
+        <div className="flex items-center justify-between mb-4">
         <span className="text-sm text-muted-foreground font-medium">{customers?.length || 0} risultati</span>
         <button
           onClick={() => setShowAdd(true)}
@@ -52,6 +69,20 @@ export default function Customers() {
             >
               <div>
                 <h3 className="font-medium text-foreground text-lg mb-1">{customer.fullName}</h3>
+                {(() => {
+                  const s = statusMap.get(customer.id);
+                  if (!s || s.status === "none") return null;
+                  if (s.status === "active" && s.lastProduct && s.expiresAt) {
+                    return <div className="text-xs text-emerald-600 font-medium mb-1">{s.lastProduct} · scade {formatDate(s.expiresAt)}</div>;
+                  }
+                  if (s.status === "expired" && s.lastProduct && s.expiresAt) {
+                    return <div className="text-xs text-red-500 font-medium mb-1">{s.lastProduct} · scaduto {formatDate(s.expiresAt)}</div>;
+                  }
+                  if (s.status === "classpack" && s.lastProduct && s.purchaseDate) {
+                    return <div className="text-xs text-muted-foreground font-medium mb-1">{s.lastProduct} · acquistato {formatDate(s.purchaseDate)}</div>;
+                  }
+                  return null;
+                })()}
                 {customer.phone && (
                   <div className="flex items-center gap-2 text-muted-foreground text-sm">
                     <Phone className="w-3.5 h-3.5" />
@@ -77,6 +108,7 @@ export default function Customers() {
       {editCustomer && (
         <EditCustomerModal customer={editCustomer} onClose={() => setEditCustomer(null)} onSuccess={() => { setEditCustomer(null); refetch(); }} />
       )}
+      </div>
     </PageTransition>
   );
 }

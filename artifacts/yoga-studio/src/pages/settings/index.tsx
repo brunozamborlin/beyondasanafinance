@@ -3,9 +3,11 @@ import { PageTransition } from "@/components/PageTransition";
 import { useGetTaxSettings, useUpdateTaxSettings, useListProducts, useUpdateProduct, useCreateProduct } from "@workspace/api-client-react";
 import { ChevronLeft, Percent, Package, Loader2, Plus, X, Check, Pencil } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { useLocation } from "wouter";
 import { formatCurrency } from "@/lib/utils";
 
 export default function Settings() {
+  const [, navigate] = useLocation();
   const { data: taxSettings, refetch: refetchTax } = useGetTaxSettings();
   const updateTax = useUpdateTaxSettings();
   const { data: products, refetch: refetchProducts } = useListProducts();
@@ -19,9 +21,15 @@ export default function Settings() {
   const [editName, setEditName] = useState("");
   const [editPrice, setEditPrice] = useState("");
   const [editActive, setEditActive] = useState(true);
+  const [editType, setEditType] = useState("other");
+  const [editDuration, setEditDuration] = useState("");
+  const [editClassCount, setEditClassCount] = useState("");
   const [isAdding, setIsAdding] = useState(false);
   const [newName, setNewName] = useState("");
   const [newPrice, setNewPrice] = useState("");
+  const [newType, setNewType] = useState("other");
+  const [newDuration, setNewDuration] = useState("");
+  const [newClassCount, setNewClassCount] = useState("");
 
   const handleSaveTax = () => {
     updateTax.mutate({
@@ -40,6 +48,9 @@ export default function Settings() {
     setEditName(product.name);
     setEditPrice(String((product.defaultPrice / 100).toFixed(2)));
     setEditActive(product.active);
+    setEditType(product.type || "other");
+    setEditDuration(product.durationMonths ? String(product.durationMonths) : "");
+    setEditClassCount(product.classCount ? String(product.classCount) : "");
   };
 
   const cancelEdit = () => {
@@ -51,7 +62,14 @@ export default function Settings() {
     const priceInCents = Math.round(parseFloat(editPrice || "0") * 100);
     updateProduct.mutate({
       id: editingProductId,
-      data: { name: editName, defaultPrice: priceInCents, active: editActive }
+      data: {
+        name: editName,
+        defaultPrice: priceInCents,
+        active: editActive,
+        type: editType,
+        durationMonths: editType === "subscription" ? parseInt(editDuration) || null : null,
+        classCount: editType === "classpack" ? parseInt(editClassCount) || null : null,
+      }
     }, {
       onSuccess: () => {
         toast({ title: "Prodotto aggiornato" });
@@ -65,13 +83,22 @@ export default function Settings() {
     if (!newName.trim()) return;
     const priceInCents = Math.round(parseFloat(newPrice || "0") * 100);
     createProduct.mutate({
-      data: { name: newName.trim(), defaultPrice: priceInCents }
+      data: {
+        name: newName.trim(),
+        defaultPrice: priceInCents,
+        type: newType,
+        durationMonths: newType === "subscription" ? parseInt(newDuration) || null : null,
+        classCount: newType === "classpack" ? parseInt(newClassCount) || null : null,
+      }
     }, {
       onSuccess: () => {
         toast({ title: "Prodotto creato" });
         setIsAdding(false);
         setNewName("");
         setNewPrice("");
+        setNewType("other");
+        setNewDuration("");
+        setNewClassCount("");
         refetchProducts();
       }
     });
@@ -80,7 +107,7 @@ export default function Settings() {
   return (
     <PageTransition className="min-h-screen bg-background">
       <header className="px-6 py-4 flex items-center gap-4 border-b border-border/50 bg-white/80 backdrop-blur-md sticky top-0 z-10">
-        <button onClick={() => window.history.back()} className="p-2 -ml-2 rounded-full hover:bg-black/5 transition-colors">
+        <button onClick={() => navigate("/manage")} className="p-2 -ml-2 rounded-full hover:bg-black/5 transition-colors">
           <ChevronLeft className="w-6 h-6 text-foreground" />
         </button>
         <h1 className="text-xl font-serif font-medium">Impostazioni</h1>
@@ -142,8 +169,41 @@ export default function Settings() {
                   className="flex-1 bg-background border border-border/60 rounded-xl px-4 py-2.5 text-sm"
                 />
               </div>
+              <select
+                value={newType}
+                onChange={e => setNewType(e.target.value)}
+                className="w-full bg-background border border-border/60 rounded-xl px-4 py-2.5 text-sm"
+              >
+                <option value="other">Altro</option>
+                <option value="subscription">Abbonamento</option>
+                <option value="classpack">Pacchetto Ore</option>
+              </select>
+              {newType === "subscription" && (
+                <div className="flex items-center gap-2">
+                  <input
+                    type="number"
+                    value={newDuration}
+                    onChange={e => setNewDuration(e.target.value)}
+                    placeholder="Durata"
+                    className="flex-1 bg-background border border-border/60 rounded-xl px-4 py-2.5 text-sm"
+                  />
+                  <span className="text-sm text-muted-foreground">mesi</span>
+                </div>
+              )}
+              {newType === "classpack" && (
+                <div className="flex items-center gap-2">
+                  <input
+                    type="number"
+                    value={newClassCount}
+                    onChange={e => setNewClassCount(e.target.value)}
+                    placeholder="Lezioni"
+                    className="flex-1 bg-background border border-border/60 rounded-xl px-4 py-2.5 text-sm"
+                  />
+                  <span className="text-sm text-muted-foreground">lezioni</span>
+                </div>
+              )}
               <div className="flex gap-2 justify-end">
-                <button onClick={() => { setIsAdding(false); setNewName(""); setNewPrice(""); }} className="px-4 py-2 rounded-xl text-sm text-muted-foreground hover:bg-black/5">
+                <button onClick={() => { setIsAdding(false); setNewName(""); setNewPrice(""); setNewType("other"); setNewDuration(""); setNewClassCount(""); }} className="px-4 py-2 rounded-xl text-sm text-muted-foreground hover:bg-black/5">
                   Annulla
                 </button>
                 <button
@@ -178,6 +238,39 @@ export default function Settings() {
                         className="flex-1 bg-background border border-border/60 rounded-xl px-4 py-2.5 text-sm"
                       />
                     </div>
+                    <select
+                      value={editType}
+                      onChange={e => setEditType(e.target.value)}
+                      className="w-full bg-background border border-border/60 rounded-xl px-4 py-2.5 text-sm"
+                    >
+                      <option value="other">Altro</option>
+                      <option value="subscription">Abbonamento</option>
+                      <option value="classpack">Pacchetto Ore</option>
+                    </select>
+                    {editType === "subscription" && (
+                      <div className="flex items-center gap-2">
+                        <input
+                          type="number"
+                          value={editDuration}
+                          onChange={e => setEditDuration(e.target.value)}
+                          placeholder="Durata"
+                          className="flex-1 bg-background border border-border/60 rounded-xl px-4 py-2.5 text-sm"
+                        />
+                        <span className="text-sm text-muted-foreground">mesi</span>
+                      </div>
+                    )}
+                    {editType === "classpack" && (
+                      <div className="flex items-center gap-2">
+                        <input
+                          type="number"
+                          value={editClassCount}
+                          onChange={e => setEditClassCount(e.target.value)}
+                          placeholder="Lezioni"
+                          className="flex-1 bg-background border border-border/60 rounded-xl px-4 py-2.5 text-sm"
+                        />
+                        <span className="text-sm text-muted-foreground">lezioni</span>
+                      </div>
+                    )}
                     <div className="flex items-center justify-between">
                       <label className="flex items-center gap-2 text-sm">
                         <input
@@ -204,6 +297,8 @@ export default function Settings() {
                       <div className="font-medium text-foreground">{product.name}</div>
                       <div className={`text-xs ${product.active ? "text-muted-foreground" : "text-red-500"}`}>
                         {product.active ? "Attivo" : "Inattivo"}
+                        {product.type === "subscription" && product.durationMonths && ` · ${product.durationMonths} mesi`}
+                        {product.type === "classpack" && product.classCount && ` · ${product.classCount} lezioni`}
                       </div>
                     </div>
                     <div className="flex items-center gap-3">

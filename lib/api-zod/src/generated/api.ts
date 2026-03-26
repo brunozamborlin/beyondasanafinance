@@ -79,6 +79,20 @@ export const UpdateCustomerResponse = zod.object({
 });
 
 /**
+ * @summary Get status of all customers based on last purchase
+ */
+export const ListCustomerStatusesResponseItem = zod.object({
+  customerId: zod.number(),
+  lastProduct: zod.string().nullish(),
+  purchaseDate: zod.string().nullish(),
+  expiresAt: zod.string().nullish(),
+  status: zod.string().describe("active | expired | classpack | none"),
+});
+export const ListCustomerStatusesResponse = zod.array(
+  ListCustomerStatusesResponseItem,
+);
+
+/**
  * @summary List all products
  */
 export const ListProductsResponseItem = zod.object({
@@ -87,6 +101,9 @@ export const ListProductsResponseItem = zod.object({
   defaultPrice: zod.number().describe("Price in cents"),
   active: zod.boolean(),
   sortOrder: zod.number(),
+  type: zod.string().describe("subscription | classpack | other"),
+  durationMonths: zod.number().nullish(),
+  classCount: zod.number().nullish(),
 });
 export const ListProductsResponse = zod.array(ListProductsResponseItem);
 
@@ -98,6 +115,9 @@ export const CreateProductBody = zod.object({
   defaultPrice: zod.number().describe("Price in cents"),
   active: zod.boolean().optional(),
   sortOrder: zod.number().optional(),
+  type: zod.string().optional().describe("subscription | classpack | other"),
+  durationMonths: zod.number().nullish(),
+  classCount: zod.number().nullish(),
 });
 
 /**
@@ -112,6 +132,9 @@ export const UpdateProductBody = zod.object({
   defaultPrice: zod.number().describe("Price in cents"),
   active: zod.boolean().optional(),
   sortOrder: zod.number().optional(),
+  type: zod.string().optional().describe("subscription | classpack | other"),
+  durationMonths: zod.number().nullish(),
+  classCount: zod.number().nullish(),
 });
 
 export const UpdateProductResponse = zod.object({
@@ -120,6 +143,9 @@ export const UpdateProductResponse = zod.object({
   defaultPrice: zod.number().describe("Price in cents"),
   active: zod.boolean(),
   sortOrder: zod.number(),
+  type: zod.string().describe("subscription | classpack | other"),
+  durationMonths: zod.number().nullish(),
+  classCount: zod.number().nullish(),
 });
 
 /**
@@ -373,6 +399,66 @@ export const GetMonthlySummaryResponse = zod.object({
   otherCosts: zod.number().describe("Total other costs in cents"),
   estimatedTaxes: zod.number().describe("Estimated taxes in cents"),
   netProfit: zod.number().describe("Net profit in cents"),
+});
+
+/**
+ * @summary Get aggregated dashboard analytics across all months
+ */
+export const GetDashboardDataResponse = zod.object({
+  monthlyData: zod
+    .array(
+      zod.object({
+        month: zod.string(),
+        revenue: zod.number().describe("Total revenue in cents"),
+        teacherCosts: zod.number().describe("Total teacher costs in cents"),
+        otherCosts: zod.number().describe("Total other costs in cents"),
+        estimatedTaxes: zod.number().describe("Estimated taxes in cents"),
+        netProfit: zod.number().describe("Net profit in cents"),
+      }),
+    )
+    .optional(),
+  productStats: zod
+    .array(
+      zod.object({
+        productId: zod.number().optional(),
+        productName: zod.string().optional(),
+        count: zod.number().optional(),
+        totalRevenue: zod.number().optional(),
+      }),
+    )
+    .optional(),
+  paymentMethodStats: zod
+    .array(
+      zod.object({
+        method: zod.string().optional(),
+        count: zod.number().optional(),
+        totalAmount: zod.number().optional(),
+      }),
+    )
+    .optional(),
+  teacherStats: zod
+    .array(
+      zod.object({
+        teacherId: zod.number().optional(),
+        teacherName: zod.string().optional(),
+        totalHours: zod.number().optional(),
+        totalCost: zod.number().optional(),
+        monthsActive: zod.number().optional(),
+        attributedRevenue: zod.number().optional(),
+        profit: zod.number().optional(),
+      }),
+    )
+    .optional(),
+  topCustomers: zod
+    .array(
+      zod.object({
+        customerId: zod.number().optional(),
+        customerName: zod.string().optional(),
+        count: zod.number().optional(),
+        totalSpent: zod.number().optional(),
+      }),
+    )
+    .optional(),
 });
 
 /**

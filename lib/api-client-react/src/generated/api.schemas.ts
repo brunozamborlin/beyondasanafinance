@@ -31,6 +31,10 @@ export interface Product {
   defaultPrice: number;
   active: boolean;
   sortOrder: number;
+  /** subscription | classpack | other */
+  type: string;
+  durationMonths?: number | null;
+  classCount?: number | null;
 }
 
 export interface CreateProduct {
@@ -39,6 +43,19 @@ export interface CreateProduct {
   defaultPrice: number;
   active?: boolean;
   sortOrder?: number;
+  /** subscription | classpack | other */
+  type?: string;
+  durationMonths?: number | null;
+  classCount?: number | null;
+}
+
+export interface CustomerStatus {
+  customerId: number;
+  lastProduct?: string | null;
+  purchaseDate?: string | null;
+  expiresAt?: string | null;
+  /** active | expired | classpack | none */
+  status: string;
 }
 
 export type PaymentPaymentMethod =
@@ -217,4 +234,42 @@ export type ListOtherCostsParams = {
    * Month in YYYY-MM format
    */
   month: string;
+};
+
+export type GetDashboardData200ProductStatsItem = {
+  productId?: number;
+  productName?: string;
+  count?: number;
+  totalRevenue?: number;
+};
+
+export type GetDashboardData200PaymentMethodStatsItem = {
+  method?: string;
+  count?: number;
+  totalAmount?: number;
+};
+
+export type GetDashboardData200TeacherStatsItem = {
+  teacherId?: number;
+  teacherName?: string;
+  totalHours?: number;
+  totalCost?: number;
+  monthsActive?: number;
+  attributedRevenue?: number;
+  profit?: number;
+};
+
+export type GetDashboardData200TopCustomersItem = {
+  customerId?: number;
+  customerName?: string;
+  count?: number;
+  totalSpent?: number;
+};
+
+export type GetDashboardData200 = {
+  monthlyData?: MonthlySummary[];
+  productStats?: GetDashboardData200ProductStatsItem[];
+  paymentMethodStats?: GetDashboardData200PaymentMethodStatsItem[];
+  teacherStats?: GetDashboardData200TeacherStatsItem[];
+  topCustomers?: GetDashboardData200TopCustomersItem[];
 };

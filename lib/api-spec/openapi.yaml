@@ -116,6 +116,21 @@ paths:
               schema:
                 $ref: "#/components/schemas/Customer"
 
+  /customers/status:
+    get:
+      operationId: listCustomerStatuses
+      tags: [customers]
+      summary: Get status of all customers based on last purchase
+      responses:
+        "200":
+          description: List of customer statuses
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/CustomerStatus"
+
   /products:
     get:
       operationId: listProducts
@@ -706,12 +721,22 @@ components:
           type: boolean
         sortOrder:
           type: integer
+        type:
+          type: string
+          description: "subscription | classpack | other"
+        durationMonths:
+          type: integer
+          nullable: true
+        classCount:
+          type: integer
+          nullable: true
       required:
         - id
         - name
         - defaultPrice
         - active
         - sortOrder
+        - type
 
     CreateProduct:
       type: object
@@ -725,9 +750,39 @@ components:
           type: boolean
         sortOrder:
           type: integer
+        type:
+          type: string
+          description: "subscription | classpack | other"
+        durationMonths:
+          type: integer
+          nullable: true
+        classCount:
+          type: integer
+          nullable: true
       required:
         - name
         - defaultPrice
+
+    CustomerStatus:
+      type: object
+      properties:
+        customerId:
+          type: integer
+        lastProduct:
+          type: string
+          nullable: true
+        purchaseDate:
+          type: string
+          nullable: true
+        expiresAt:
+          type: string
+          nullable: true
+        status:
+          type: string
+          description: "active | expired | classpack | none"
+      required:
+        - customerId
+        - status
 
     Payment:
       type: object

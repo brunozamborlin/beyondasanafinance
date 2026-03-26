@@ -68,7 +68,8 @@ export default function Dashboard() {
     label: shortMonth(m.month),
     revenueEur: m.revenue / 100,
     profitEur: m.netProfit / 100,
-    otherCostsEur: (m.otherCosts + m.estimatedTaxes) / 100,
+    otherCostsEur: m.otherCosts / 100,
+    taxesEur: m.estimatedTaxes / 100,
     teacherCostsEur: m.teacherCosts / 100,
   }));
 
@@ -132,6 +133,7 @@ export default function Dashboard() {
                 <Tooltip formatter={(v: number) => `€ ${v.toFixed(2)}`} labelFormatter={(l) => l} />
                 <Bar dataKey="otherCostsEur" name="Costi Fissi" stackId="revenue" fill="#e57373" radius={[0, 0, 0, 0]} />
                 <Bar dataKey="teacherCostsEur" name="Insegnanti" stackId="revenue" fill="#dda15e" radius={[0, 0, 0, 0]} />
+                <Bar dataKey="taxesEur" name="Tasse" stackId="revenue" fill="#90a4ae" radius={[0, 0, 0, 0]} />
                 <Bar dataKey="profitEur" name="Utile" stackId="revenue" fill="#7c8c6e" radius={[4, 4, 0, 0]} barSize={32} />
               </BarChart>
             </ResponsiveContainer>
@@ -139,6 +141,7 @@ export default function Dashboard() {
           <div className="flex justify-center gap-4 mt-2">
             {[
               { label: "Utile", color: "#7c8c6e" },
+              { label: "Tasse", color: "#90a4ae" },
               { label: "Insegnanti", color: "#dda15e" },
               { label: "Costi Fissi", color: "#e57373" },
             ].map((item) => (

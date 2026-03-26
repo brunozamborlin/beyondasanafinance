@@ -23,7 +23,9 @@ import type {
   CreateProduct,
   CreateTeacher,
   Customer,
+  CustomerStatus,
   DefaultCost,
+  GetDashboardData200,
   GetTeacherHoursParams,
   HealthStatus,
   ListCustomersParams,
@@ -478,6 +480,81 @@ export const useUpdateCustomer = <
 > => {
   return useMutation(getUpdateCustomerMutationOptions(options));
 };
+
+/**
+ * @summary Get status of all customers based on last purchase
+ */
+export const getListCustomerStatusesUrl = () => {
+  return `/api/customers/status`;
+};
+
+export const listCustomerStatuses = async (
+  options?: RequestInit,
+): Promise<CustomerStatus[]> => {
+  return customFetch<CustomerStatus[]>(getListCustomerStatusesUrl(), {
+    ...options,
+    method: "GET",
+  });
+};
+
+export const getListCustomerStatusesQueryKey = () => {
+  return [`/api/customers/status`] as const;
+};
+
+export const getListCustomerStatusesQueryOptions = <
+  TData = Awaited<ReturnType<typeof listCustomerStatuses>>,
+  TError = ErrorType<unknown>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof listCustomerStatuses>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getListCustomerStatusesQueryKey();
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof listCustomerStatuses>>
+  > = ({ signal }) => listCustomerStatuses({ signal, ...requestOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof listCustomerStatuses>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type ListCustomerStatusesQueryResult = NonNullable<
+  Awaited<ReturnType<typeof listCustomerStatuses>>
+>;
+export type ListCustomerStatusesQueryError = ErrorType<unknown>;
+
+/**
+ * @summary Get status of all customers based on last purchase
+ */
+
+export function useListCustomerStatuses<
+  TData = Awaited<ReturnType<typeof listCustomerStatuses>>,
+  TError = ErrorType<unknown>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof listCustomerStatuses>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getListCustomerStatusesQueryOptions(options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
 
 /**
  * @summary List all products
@@ -2040,6 +2117,81 @@ export function useGetMonthlySummary<
   },
 ): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
   const queryOptions = getGetMonthlySummaryQueryOptions(month, options);
+
+  const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
+    queryKey: QueryKey;
+  };
+
+  return { ...query, queryKey: queryOptions.queryKey };
+}
+
+/**
+ * @summary Get aggregated dashboard analytics across all months
+ */
+export const getGetDashboardDataUrl = () => {
+  return `/api/summary/dashboard`;
+};
+
+export const getDashboardData = async (
+  options?: RequestInit,
+): Promise<GetDashboardData200> => {
+  return customFetch<GetDashboardData200>(getGetDashboardDataUrl(), {
+    ...options,
+    method: "GET",
+  });
+};
+
+export const getGetDashboardDataQueryKey = () => {
+  return [`/api/summary/dashboard`] as const;
+};
+
+export const getGetDashboardDataQueryOptions = <
+  TData = Awaited<ReturnType<typeof getDashboardData>>,
+  TError = ErrorType<unknown>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof getDashboardData>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}) => {
+  const { query: queryOptions, request: requestOptions } = options ?? {};
+
+  const queryKey = queryOptions?.queryKey ?? getGetDashboardDataQueryKey();
+
+  const queryFn: QueryFunction<
+    Awaited<ReturnType<typeof getDashboardData>>
+  > = ({ signal }) => getDashboardData({ signal, ...requestOptions });
+
+  return { queryKey, queryFn, ...queryOptions } as UseQueryOptions<
+    Awaited<ReturnType<typeof getDashboardData>>,
+    TError,
+    TData
+  > & { queryKey: QueryKey };
+};
+
+export type GetDashboardDataQueryResult = NonNullable<
+  Awaited<ReturnType<typeof getDashboardData>>
+>;
+export type GetDashboardDataQueryError = ErrorType<unknown>;
+
+/**
+ * @summary Get aggregated dashboard analytics across all months
+ */
+
+export function useGetDashboardData<
+  TData = Awaited<ReturnType<typeof getDashboardData>>,
+  TError = ErrorType<unknown>,
+>(options?: {
+  query?: UseQueryOptions<
+    Awaited<ReturnType<typeof getDashboardData>>,
+    TError,
+    TData
+  >;
+  request?: SecondParameter<typeof customFetch>;
+}): UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+  const queryOptions = getGetDashboardDataQueryOptions(options);
 
   const query = useQuery(queryOptions) as UseQueryResult<TData, TError> & {
     queryKey: QueryKey;

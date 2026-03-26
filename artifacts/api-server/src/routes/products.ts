@@ -33,6 +33,7 @@ router.post("/products", async (req, res): Promise<void> => {
       ...parsed.data,
       active: parsed.data.active ?? true,
       sortOrder: parsed.data.sortOrder ?? 0,
+      type: parsed.data.type ?? "other",
     })
     .returning();
 

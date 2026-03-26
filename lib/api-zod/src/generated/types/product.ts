@@ -13,4 +13,8 @@ export interface Product {
   defaultPrice: number;
   active: boolean;
   sortOrder: number;
+  /** subscription | classpack | other */
+  type: string;
+  durationMonths?: number | null;
+  classCount?: number | null;
 }

@@ -14,7 +14,6 @@ import History from "@/pages/history/index";
 import MonthDetail from "@/pages/history/[month]";
 import Teachers from "@/pages/teachers/index";
 import TeacherDetail from "@/pages/teachers/[id]";
-import OtherCosts from "@/pages/other-costs/index";
 import Settings from "@/pages/settings/index";
 import NotFound from "@/pages/not-found";
 
@@ -41,7 +40,6 @@ function Router() {
         <Route path="/history/:month" component={MonthDetail} />
         <Route path="/teachers" component={Teachers} />
         <Route path="/teachers/:id" component={TeacherDetail} />
-        <Route path="/other-costs" component={OtherCosts} />
         <Route path="/settings" component={Settings} />
         <Route component={NotFound} />
       </Switch>

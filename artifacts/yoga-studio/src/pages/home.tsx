@@ -3,7 +3,6 @@ import { formatCurrency, getCurrentMonthStr, formatMonth } from "@/lib/utils";
 import { useGetMonthlySummary, useGetMonthlyHistory } from "@workspace/api-client-react";
 import { ArrowUpRight, ArrowDownRight, TrendingUp, Receipt, Landmark, AlertTriangle } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "wouter";
 

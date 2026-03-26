@@ -152,7 +152,119 @@ export default function MonthDetail({ params }: { params: { month: string } }) {
           </div>
         ) : (
           <>
-            <SummaryCard title="Incassi Totali" amount={summary?.revenue} icon={ArrowUpRight} colorClass="text-emerald-600" bgClass="bg-emerald-500/10" />
+            <div>
+              <SummaryCard
+                title="Incassi Totali"
+                amount={summary?.revenue}
+                icon={ArrowUpRight}
+                colorClass="text-emerald-600"
+                bgClass="bg-emerald-500/10"
+                expandable
+                expanded={expandedSection === "payments"}
+                onToggle={() => toggleSection("payments")}
+              />
+              {expandedSection === "payments" && (
+                <div className="bg-white rounded-b-2xl border border-t-0 border-border/40 px-5 py-3 -mt-2 shadow-sm">
+                  {paymentsLoading ? (
+                    <div className="space-y-3 animate-pulse py-2">
+                      {[1,2,3].map(i => <div key={i} className="h-8 bg-black/5 rounded-lg w-full"></div>)}
+                    </div>
+                  ) : payments && payments.length > 0 ? (
+                    <div className="space-y-2">
+                      {payments.map((p) =>
+                        editingId === p.id ? (
+                          <div key={p.id} className="py-2.5 border-b border-border/30 last:border-0 space-y-2">
+                            <div className="space-y-1">
+                              <label className="text-xs font-medium text-muted-foreground">Cliente</label>
+                              <select
+                                value={editForm.customerId}
+                                onChange={e => setEditForm(prev => ({ ...prev, customerId: Number(e.target.value) }))}
+                                className="w-full bg-background border border-border/60 rounded-xl px-3 py-2 text-sm"
+                              >
+                                {customers?.map(c => (
+                                  <option key={c.id} value={c.id}>{c.fullName}</option>
+                                ))}
+                              </select>
+                            </div>
+                            <div className="space-y-1">
+                              <label className="text-xs font-medium text-muted-foreground">Prodotto</label>
+                              <select
+                                value={editForm.productId}
+                                onChange={e => handleProductChange(Number(e.target.value))}
+                                className="w-full bg-background border border-border/60 rounded-xl px-3 py-2 text-sm"
+                              >
+                                {products?.map(pr => (
+                                  <option key={pr.id} value={pr.id}>{pr.name}</option>
+                                ))}
+                              </select>
+                            </div>
+                            <div className="grid grid-cols-2 gap-2">
+                              <div className="space-y-1">
+                                <label className="text-xs font-medium text-muted-foreground">Importo (€)</label>
+                                <input type="number" step="0.01" value={editForm.amountEur}
+                                  onChange={e => setEditForm(prev => ({ ...prev, amountEur: e.target.value }))}
+                                  className="w-full bg-background border border-border/60 rounded-xl px-3 py-2 text-sm" />
+                              </div>
+                              <div className="space-y-1">
+                                <label className="text-xs font-medium text-muted-foreground">Data</label>
+                                <input type="date" value={editForm.date}
+                                  onChange={e => setEditForm(prev => ({ ...prev, date: e.target.value }))}
+                                  className="w-full bg-background border border-border/60 rounded-xl px-3 py-2 text-sm" />
+                              </div>
+                            </div>
+                            <div className="space-y-1">
+                              <label className="text-xs font-medium text-muted-foreground">Metodo</label>
+                              <div className="flex bg-background border border-border/60 rounded-xl p-1">
+                                {(["contanti", "pos", "bonifico"] as const).map(m => (
+                                  <button type="button" key={m}
+                                    onClick={() => setEditForm(prev => ({ ...prev, paymentMethod: m }))}
+                                    className={cn("flex-1 py-1.5 text-xs font-medium rounded-lg transition-all",
+                                      editForm.paymentMethod === m ? "bg-white shadow-sm text-foreground" : "text-muted-foreground"
+                                    )}>
+                                    {METHOD_LABELS[m]}
+                                  </button>
+                                ))}
+                              </div>
+                            </div>
+                            <input type="text" value={editForm.note}
+                              onChange={e => setEditForm(prev => ({ ...prev, note: e.target.value }))}
+                              placeholder="Nota..."
+                              className="w-full bg-background border border-border/60 rounded-xl px-3 py-2 text-sm" />
+                            <div className="flex justify-end gap-2">
+                              <button onClick={cancelEdit} className="p-1 rounded-full hover:bg-black/5">
+                                <X className="w-4 h-4 text-muted-foreground" />
+                              </button>
+                              <button onClick={handleSave} disabled={updatePayment.isPending} className="p-1 rounded-full hover:bg-primary/10">
+                                {updatePayment.isPending ? <Loader2 className="w-4 h-4 animate-spin text-primary" /> : <Check className="w-4 h-4 text-primary" />}
+                              </button>
+                            </div>
+                          </div>
+                        ) : (
+                          <div key={p.id} className="flex items-center justify-between py-2.5 border-b border-border/30 last:border-0">
+                            <div className="flex-1 min-w-0">
+                              <div className="text-sm font-medium text-foreground truncate">{p.customerName}</div>
+                              <div className="text-xs text-muted-foreground">{p.productName} · {METHOD_LABELS[p.paymentMethod] || p.paymentMethod} · {new Date(p.date).toLocaleDateString("it-IT")}</div>
+                              {p.note && <div className="text-xs text-muted-foreground italic">{p.note}</div>}
+                            </div>
+                            <div className="flex items-center gap-2 ml-2">
+                              <span className="text-sm font-serif text-foreground">{formatCurrency(p.amount)}</span>
+                              <button onClick={() => startEdit(p)} className="p-1 rounded-full hover:bg-black/5">
+                                <Pencil className="w-3.5 h-3.5 text-muted-foreground" />
+                              </button>
+                              <button onClick={() => handleDelete(p.id)} className="p-1 rounded-full hover:bg-red-50">
+                                <Trash2 className="w-3.5 h-3.5 text-red-400" />
+                              </button>
+                            </div>
+                          </div>
+                        )
+                      )}
+                    </div>
+                  ) : (
+                    <div className="text-sm text-muted-foreground text-center py-4">Nessun pagamento</div>
+                  )}
+                </div>
+              )}
+            </div>
 
             <div>
               <SummaryCard
@@ -186,7 +298,21 @@ export default function MonthDetail({ params }: { params: { month: string } }) {
               )}
             </div>
 
-            <SummaryCard title="Tasse Stimate" amount={summary?.estimatedTaxes} icon={Landmark} colorClass="text-blue-600" bgClass="bg-blue-500/10" />
+            <div>
+              <SummaryCard
+                title="Tasse Stimate"
+                amount={summary?.estimatedTaxes}
+                icon={Landmark}
+                colorClass="text-blue-600"
+                bgClass="bg-blue-500/10"
+                expandable
+                expanded={expandedSection === "taxes"}
+                onToggle={() => toggleSection("taxes")}
+              />
+              {expandedSection === "taxes" && (
+                <TaxesSection month={month} currentAmount={summary?.estimatedTaxes ?? 0} onUpdate={invalidateAll} />
+              )}
+            </div>
 
             <div className="mt-8 pt-4 border-t border-border/50">
               <div className="bg-primary/5 border border-primary/20 rounded-3xl p-6 relative overflow-hidden">
@@ -200,133 +326,6 @@ export default function MonthDetail({ params }: { params: { month: string } }) {
               </div>
             </div>
 
-            <div className="mt-8">
-              <h2 className="text-lg font-serif font-medium text-foreground mb-4">Pagamenti del Mese</h2>
-              {paymentsLoading ? (
-                <div className="space-y-3 animate-pulse">
-                  {[1,2,3].map(i => <div key={i} className="h-16 bg-black/5 rounded-2xl w-full"></div>)}
-                </div>
-              ) : payments && payments.length > 0 ? (
-                <div className="space-y-3">
-                  {payments.map((p) =>
-                    editingId === p.id ? (
-                      <div key={p.id} className="bg-white rounded-2xl p-4 shadow-md border border-primary/30 space-y-3">
-                        <div className="space-y-1">
-                          <label className="text-xs font-medium text-muted-foreground">Cliente</label>
-                          <select
-                            value={editForm.customerId}
-                            onChange={e => setEditForm(prev => ({ ...prev, customerId: Number(e.target.value) }))}
-                            className="w-full bg-background border border-border/60 rounded-xl px-3 py-2.5 text-sm"
-                          >
-                            {customers?.map(c => (
-                              <option key={c.id} value={c.id}>{c.fullName}</option>
-                            ))}
-                          </select>
-                        </div>
-
-                        <div className="space-y-1">
-                          <label className="text-xs font-medium text-muted-foreground">Prodotto</label>
-                          <select
-                            value={editForm.productId}
-                            onChange={e => handleProductChange(Number(e.target.value))}
-                            className="w-full bg-background border border-border/60 rounded-xl px-3 py-2.5 text-sm"
-                          >
-                            {products?.map(pr => (
-                              <option key={pr.id} value={pr.id}>{pr.name}</option>
-                            ))}
-                          </select>
-                        </div>
-
-                        <div className="grid grid-cols-2 gap-3">
-                          <div className="space-y-1">
-                            <label className="text-xs font-medium text-muted-foreground">Importo (€)</label>
-                            <input
-                              type="number"
-                              step="0.01"
-                              value={editForm.amountEur}
-                              onChange={e => setEditForm(prev => ({ ...prev, amountEur: e.target.value }))}
-                              className="w-full bg-background border border-border/60 rounded-xl px-3 py-2.5 text-sm"
-                            />
-                          </div>
-                          <div className="space-y-1">
-                            <label className="text-xs font-medium text-muted-foreground">Data</label>
-                            <input
-                              type="date"
-                              value={editForm.date}
-                              onChange={e => setEditForm(prev => ({ ...prev, date: e.target.value }))}
-                              className="w-full bg-background border border-border/60 rounded-xl px-3 py-2.5 text-sm"
-                            />
-                          </div>
-                        </div>
-
-                        <div className="space-y-1">
-                          <label className="text-xs font-medium text-muted-foreground">Metodo</label>
-                          <div className="flex bg-background border border-border/60 rounded-xl p-1">
-                            {(["contanti", "pos", "bonifico"] as const).map(m => (
-                              <button
-                                type="button"
-                                key={m}
-                                onClick={() => setEditForm(prev => ({ ...prev, paymentMethod: m }))}
-                                className={cn(
-                                  "flex-1 py-1.5 text-xs font-medium rounded-lg transition-all",
-                                  editForm.paymentMethod === m ? "bg-white shadow-sm text-foreground" : "text-muted-foreground"
-                                )}
-                              >
-                                {METHOD_LABELS[m]}
-                              </button>
-                            ))}
-                          </div>
-                        </div>
-
-                        <div className="space-y-1">
-                          <label className="text-xs font-medium text-muted-foreground">Note</label>
-                          <input
-                            type="text"
-                            value={editForm.note}
-                            onChange={e => setEditForm(prev => ({ ...prev, note: e.target.value }))}
-                            placeholder="Nota opzionale..."
-                            className="w-full bg-background border border-border/60 rounded-xl px-3 py-2.5 text-sm"
-                          />
-                        </div>
-
-                        <div className="flex justify-end gap-2 pt-1">
-                          <button onClick={cancelEdit} className="p-2 rounded-full hover:bg-black/5">
-                            <X className="w-5 h-5 text-muted-foreground" />
-                          </button>
-                          <button onClick={handleSave} disabled={updatePayment.isPending} className="p-2 rounded-full hover:bg-primary/10">
-                            {updatePayment.isPending ? <Loader2 className="w-5 h-5 animate-spin text-primary" /> : <Check className="w-5 h-5 text-primary" />}
-                          </button>
-                        </div>
-                      </div>
-                    ) : (
-                      <div key={p.id} className="bg-white rounded-2xl p-4 shadow-sm border border-border/40">
-                        <div className="flex items-center justify-between mb-1">
-                          <span className="font-medium text-foreground text-sm">{p.customerName}</span>
-                          <div className="flex items-center gap-2">
-                            <span className="font-serif font-medium text-foreground">{formatCurrency(p.amount)}</span>
-                            <button onClick={() => startEdit(p)} className="p-1.5 rounded-full hover:bg-black/5">
-                              <Pencil className="w-3.5 h-3.5 text-muted-foreground" />
-                            </button>
-                            <button onClick={() => handleDelete(p.id)} className="p-1.5 rounded-full hover:bg-red-50">
-                              <Trash2 className="w-3.5 h-3.5 text-red-400" />
-                            </button>
-                          </div>
-                        </div>
-                        <div className="flex items-center justify-between text-xs text-muted-foreground">
-                          <span>{p.productName}</span>
-                          <span>{METHOD_LABELS[p.paymentMethod] || p.paymentMethod} · {new Date(p.date).toLocaleDateString("it-IT")}</span>
-                        </div>
-                        {p.note && <div className="text-xs text-muted-foreground mt-1 italic">{p.note}</div>}
-                      </div>
-                    )
-                  )}
-                </div>
-              ) : (
-                <div className="text-center py-8 text-muted-foreground text-sm">
-                  Nessun pagamento in questo mese
-                </div>
-              )}
-            </div>
           </>
         )}
       </div>
@@ -358,108 +357,6 @@ function SummaryCard({ title, amount, icon: Icon, colorClass, bgClass, expandabl
           <ChevronDown className={cn("w-5 h-5 text-muted-foreground transition-transform", expanded && "rotate-180")} />
         )}
       </div>
-    </div>
-  );
-}
-
-function TeacherCostRow({ teacher, month, onUpdate }: { teacher: any; month: string; onUpdate: () => void }) {
-  const { toast } = useToast();
-  const queryClient = useQueryClient();
-  const { data: hoursData, isLoading: hoursLoading } = useGetTeacherHours(teacher.id, { month });
-  const upsertHours = useUpsertTeacherHours();
-  const [editing, setEditing] = useState(false);
-  const [costEur, setCostEur] = useState("");
-
-  const currentCost = hoursData?.manualCost ?? 0;
-
-  const startEditing = () => {
-    if (hoursLoading) return;
-    setCostEur((currentCost / 100).toFixed(2));
-    setEditing(true);
-  };
-
-  const save = () => {
-    if (hoursLoading) return;
-    const cents = Math.round(parseFloat(costEur || "0") * 100);
-    upsertHours.mutate({
-      id: teacher.id,
-      data: {
-        month,
-        hoursWorked: hoursData?.hoursWorked ?? 0,
-        manualCost: cents,
-      },
-    }, {
-      onSuccess: () => {
-        toast({ title: `Costo aggiornato per ${teacher.name}` });
-        setEditing(false);
-        queryClient.invalidateQueries({ queryKey: [`/api/teachers/${teacher.id}/hours`] });
-        onUpdate();
-      },
-      onError: () => {
-        toast({ title: "Errore", variant: "destructive" });
-      },
-    });
-  };
-
-  if (editing) {
-    return (
-      <div className="flex items-center justify-between py-2.5 border-b border-border/30 last:border-0">
-        <span className="text-sm font-medium text-foreground">{teacher.name}</span>
-        <div className="flex items-center gap-2">
-          <div className="flex items-center bg-background border border-border/60 rounded-xl overflow-hidden">
-            <span className="pl-3 text-sm text-muted-foreground">€</span>
-            <input
-              type="number"
-              step="0.01"
-              value={costEur}
-              onChange={e => setCostEur(e.target.value)}
-              className="w-24 bg-transparent px-2 py-1.5 text-sm text-right outline-none"
-              autoFocus
-              onKeyDown={e => { if (e.key === "Enter") save(); if (e.key === "Escape") setEditing(false); }}
-            />
-          </div>
-          <button onClick={() => setEditing(false)} className="p-1 rounded-full hover:bg-black/5">
-            <X className="w-4 h-4 text-muted-foreground" />
-          </button>
-          <button onClick={save} disabled={upsertHours.isPending} className="p-1 rounded-full hover:bg-primary/10">
-            {upsertHours.isPending ? <Loader2 className="w-4 h-4 animate-spin text-primary" /> : <Check className="w-4 h-4 text-primary" />}
-          </button>
-        </div>
-      </div>
-    );
-  }
-
-  return (
-    <div className="flex items-center justify-between py-2.5 border-b border-border/30 last:border-0">
-      <span className="text-sm font-medium text-foreground">{teacher.name}</span>
-      <div className="flex items-center gap-2">
-        <span className="text-sm font-serif text-foreground">
-          {hoursLoading ? "..." : formatCurrency(currentCost)}
-        </span>
-        <button onClick={startEditing} disabled={hoursLoading} className="p-1 rounded-full hover:bg-black/5 disabled:opacity-40">
-          <Pencil className="w-3.5 h-3.5 text-muted-foreground" />
-        </button>
-      </div>
-    </div>
-  );
-}
-
-function TeacherCostsSection({ month, onUpdate }: { month: string; onUpdate: () => void }) {
-  const { data: teachers, isLoading } = useListTeachers();
-
-  return (
-    <div className="bg-white rounded-b-2xl border border-t-0 border-border/40 px-5 py-3 -mt-2 shadow-sm">
-      {isLoading ? (
-        <div className="space-y-3 animate-pulse py-2">
-          {[1,2,3].map(i => <div key={i} className="h-8 bg-black/5 rounded-lg w-full"></div>)}
-        </div>
-      ) : teachers && teachers.length > 0 ? (
-        teachers.map(t => (
-          <TeacherCostRow key={t.id} teacher={t} month={month} onUpdate={onUpdate} />
-        ))
-      ) : (
-        <div className="text-sm text-muted-foreground text-center py-4">Nessun insegnante</div>
-      )}
     </div>
   );
 }
@@ -549,7 +446,7 @@ function OtherCostsSection({ month, onUpdate }: { month: string; onUpdate: () =>
         </div>
       ) : (
         <>
-          {costs && costs.length > 0 ? costs.map(c =>
+          {costs && costs.filter((c: any) => c.category !== "tasse").length > 0 ? costs.filter((c: any) => c.category !== "tasse").map(c =>
             editingId === c.id ? (
               <div key={c.id} className="py-2.5 border-b border-border/30 last:border-0 space-y-2">
                 <div className="flex gap-2">
@@ -657,6 +554,182 @@ function OtherCostsSection({ month, onUpdate }: { month: string; onUpdate: () =>
             </button>
           )}
         </>
+      )}
+    </div>
+  );
+}
+
+function TaxesSection({ month, currentAmount, onUpdate }: { month: string; currentAmount: number; onUpdate: () => void }) {
+  const { toast } = useToast();
+  const { data: costs } = useListOtherCosts({ month });
+  const createCost = useCreateOtherCost();
+  const updateCost = useUpdateOtherCost();
+  const deleteCost = useDeleteOtherCost();
+
+  const taxEntry = costs?.find((c: any) => c.category === "tasse");
+  const isManual = !!taxEntry;
+
+  const [editing, setEditing] = useState(false);
+  const [amountEur, setAmountEur] = useState("");
+
+  const startEditing = () => {
+    setAmountEur(isManual ? (taxEntry!.amount / 100).toFixed(2) : (currentAmount / 100).toFixed(2));
+    setEditing(true);
+  };
+
+  const save = () => {
+    const cents = Math.round(parseFloat(amountEur || "0") * 100);
+    if (taxEntry) {
+      updateCost.mutate({ id: taxEntry.id, data: { month, category: "tasse", amount: cents } }, {
+        onSuccess: () => { toast({ title: "Tasse aggiornate" }); setEditing(false); onUpdate(); },
+      });
+    } else {
+      createCost.mutate({ data: { month, category: "tasse", amount: cents } }, {
+        onSuccess: () => { toast({ title: "Tasse impostate manualmente" }); setEditing(false); onUpdate(); },
+      });
+    }
+  };
+
+  const removeManual = () => {
+    if (!taxEntry) return;
+    deleteCost.mutate({ id: taxEntry.id }, {
+      onSuccess: () => { toast({ title: "Tornato al calcolo automatico" }); onUpdate(); },
+    });
+  };
+
+  return (
+    <div className="bg-white rounded-b-2xl border border-t-0 border-border/40 px-5 py-3 -mt-2 shadow-sm">
+      <p className="text-xs text-muted-foreground mb-3">
+        {isManual ? "Valore impostato manualmente." : "Calcolato automaticamente in base all'aliquota fiscale."}
+      </p>
+      {editing ? (
+        <div className="flex items-center gap-2">
+          <div className="flex items-center bg-background border border-border/60 rounded-xl overflow-hidden flex-1">
+            <span className="pl-3 text-sm text-muted-foreground">€</span>
+            <input
+              type="number" step="0.01" value={amountEur}
+              onChange={e => setAmountEur(e.target.value)}
+              className="w-full bg-transparent px-2 py-1.5 text-sm outline-none"
+              autoFocus
+              onKeyDown={e => { if (e.key === "Enter") save(); if (e.key === "Escape") setEditing(false); }}
+            />
+          </div>
+          <button onClick={() => setEditing(false)} className="p-1 rounded-full hover:bg-black/5">
+            <X className="w-4 h-4 text-muted-foreground" />
+          </button>
+          <button onClick={save} className="p-1 rounded-full hover:bg-primary/10">
+            <Check className="w-4 h-4 text-primary" />
+          </button>
+        </div>
+      ) : (
+        <div className="flex items-center gap-2">
+          <button onClick={startEditing} className="flex items-center gap-2 text-sm text-primary font-medium hover:opacity-80">
+            <Pencil className="w-3.5 h-3.5" />
+            {isManual ? "Modifica importo" : "Imposta manualmente"}
+          </button>
+          {isManual && (
+            <button onClick={removeManual} className="text-xs text-muted-foreground hover:text-red-500 ml-auto">
+              Ripristina automatico
+            </button>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function TeacherCostRow({ teacher, month, onUpdate }: { teacher: any; month: string; onUpdate: () => void }) {
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
+  const { data: hoursData, isLoading: hoursLoading } = useGetTeacherHours(teacher.id, { month });
+  const upsertHours = useUpsertTeacherHours();
+  const [editing, setEditing] = useState(false);
+  const [costEur, setCostEur] = useState("");
+
+  const currentCost = hoursData?.manualCost ?? 0;
+
+  const startEditing = () => {
+    if (hoursLoading) return;
+    setCostEur((currentCost / 100).toFixed(2));
+    setEditing(true);
+  };
+
+  const save = () => {
+    if (hoursLoading) return;
+    const cents = Math.round(parseFloat(costEur || "0") * 100);
+    upsertHours.mutate({
+      id: teacher.id,
+      data: {
+        month,
+        hoursWorked: hoursData?.hoursWorked ?? 0,
+        manualCost: cents,
+      },
+    }, {
+      onSuccess: () => {
+        toast({ title: `Costo aggiornato per ${teacher.name}` });
+        setEditing(false);
+        queryClient.invalidateQueries();
+        onUpdate();
+      },
+    });
+  };
+
+  if (editing) {
+    return (
+      <div className="flex items-center justify-between py-2.5 border-b border-border/30 last:border-0">
+        <span className="text-sm font-medium text-foreground">{teacher.name}</span>
+        <div className="flex items-center gap-2">
+          <div className="flex items-center bg-background border border-border/60 rounded-xl overflow-hidden">
+            <span className="pl-3 text-sm text-muted-foreground">€</span>
+            <input
+              type="number" step="0.01" value={costEur}
+              onChange={e => setCostEur(e.target.value)}
+              className="w-24 bg-transparent px-2 py-1.5 text-sm text-right outline-none"
+              autoFocus
+              onKeyDown={e => { if (e.key === "Enter") save(); if (e.key === "Escape") setEditing(false); }}
+            />
+          </div>
+          <button onClick={() => setEditing(false)} className="p-1 rounded-full hover:bg-black/5">
+            <X className="w-4 h-4 text-muted-foreground" />
+          </button>
+          <button onClick={save} disabled={upsertHours.isPending} className="p-1 rounded-full hover:bg-primary/10">
+            {upsertHours.isPending ? <Loader2 className="w-4 h-4 animate-spin text-primary" /> : <Check className="w-4 h-4 text-primary" />}
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex items-center justify-between py-2.5 border-b border-border/30 last:border-0">
+      <span className="text-sm font-medium text-foreground">{teacher.name}</span>
+      <div className="flex items-center gap-2">
+        <span className="text-sm font-serif text-foreground">
+          {hoursLoading ? "..." : formatCurrency(currentCost)}
+        </span>
+        <button onClick={startEditing} disabled={hoursLoading} className="p-1 rounded-full hover:bg-black/5 disabled:opacity-40">
+          <Pencil className="w-3.5 h-3.5 text-muted-foreground" />
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function TeacherCostsSection({ month, onUpdate }: { month: string; onUpdate: () => void }) {
+  const { data: teachers, isLoading } = useListTeachers();
+
+  return (
+    <div className="bg-white rounded-b-2xl border border-t-0 border-border/40 px-5 py-3 -mt-2 shadow-sm">
+      {isLoading ? (
+        <div className="space-y-3 animate-pulse py-2">
+          {[1,2,3].map(i => <div key={i} className="h-8 bg-black/5 rounded-lg w-full"></div>)}
+        </div>
+      ) : teachers && teachers.length > 0 ? (
+        teachers.map(t => (
+          <TeacherCostRow key={t.id} teacher={t} month={month} onUpdate={onUpdate} />
+        ))
+      ) : (
+        <div className="text-sm text-muted-foreground text-center py-4">Nessun insegnante</div>
       )}
     </div>
   );
